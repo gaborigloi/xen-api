@@ -4960,6 +4960,17 @@ let host_mxgpu_vf_setup = call
     ~allowed_roles:_R_VM_OP
     ()
 
+let host_price_of = call ~flags:[`Session]
+    ~name:"price_of"
+    ~in_oss_since:None
+    ~in_product_since:rel_ely
+    ~params:[Ref _host, "host", "The host containing the price information";
+             String, "item", "The item whose price is queried"]
+    ~result:(Float, "The price of the item")
+    ~doc:"Returns the price of a named item."
+    ~allowed_roles:_R_POOL_OP
+    ()
+
 (** Hosts *)
 let host =
   create_obj ~in_db:true ~in_product_since:rel_rio ~in_oss_since:oss_since_303 ~internal_deprecated_since:None ~persist:PersistEverything ~gen_constructor_destructor:false ~name:_host ~descr:"A physical host" ~gen_events:true
@@ -5051,6 +5062,7 @@ let host =
                 host_set_ssl_legacy;
                 host_apply_guest_agent_config;
                 host_mxgpu_vf_setup;
+                host_price_of;
                ]
     ~contents:
       ([ uid _host;

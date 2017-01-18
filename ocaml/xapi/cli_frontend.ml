@@ -844,6 +844,15 @@ let rec cmdtable_data : (string*cmd_spec) list =
       flags=[];
     };
 
+    "host-price-of",
+    {
+      reqd=["host-uuid"; "item"];
+      optn=[];
+      help="Find out the price of an item on a certain host.";
+      implementation= No_fd Cli_operations.host_price_of;
+      flags=[];
+    };
+
     "patch-upload",
     {
       reqd=["file-name"];

@@ -1742,3 +1742,6 @@ let apply_guest_agent_config ~__context ~host =
 
 let mxgpu_vf_setup ~__context ~host =
   Xapi_pgpu.mxgpu_vf_setup __context
+
+let price_of ~__context ~host ~item =
+    if item = "fish" then 3.14 else 0.00

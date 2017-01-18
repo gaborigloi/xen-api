@@ -4335,6 +4335,12 @@ let set_update_vdi_name rpc session_id update_ref =
   let update_name = Client.Pool_update.get_name_label rpc session_id update_ref in
   Client.VDI.set_name_label rpc session_id update_vdi (Printf.sprintf "Update: %s" update_name)
 
+let host_price_of printer rpc session_id params =
+  let host = Client.Host.get_by_uuid rpc session_id (List.assoc "host-uuid" params) in
+  let item = List.assoc "item" params in
+  let price = string_of_float (Client.Host.price_of rpc session_id host item) in
+  printer (Cli_printer.PList [price])
+
 let patch_upload fd printer rpc session_id params =
   let filename = List.assoc "file-name" params in
   let make_command task_id =
