@@ -43,27 +43,6 @@ let create_pool_record ~__context =
       ~guest_agent_config:[]
       ~cpu_info:[] ~policy_no_vendor_device:false ~live_patching_disabled:false
 
-let set_master_ip ~__context =
-  let ip =
-    match (Helpers.get_management_ip_addr ~__context) with
-      Some ip -> ip
-    | None ->
-      (error "Cannot read master IP address. Check the control interface has an IP address"; "") in
-  let host = Helpers.get_localhost ~__context in
-  Db.Host.set_address ~__context ~self:host ~value:ip
-
-(* NB the master doesn't use the heartbeat mechanism to track its own liveness so we
-   must make sure that live starts out as true because it will never be updated. *)
-let set_master_live ~__context =
-  let host = Helpers.get_localhost ~__context in
-  let metrics = Db.Host.get_metrics ~__context ~self:host in
-  debug "Setting Host_metrics.live to true for localhost";
-  Db.Host_metrics.set_live ~__context ~self:metrics ~value:true
-
-let set_master_pool_reference ~__context =
-  let pool = Helpers.get_pool ~__context in
-  Db.Pool.set_master ~__context ~self:pool ~value:(Helpers.get_localhost ~__context)
-
 let refresh_console_urls ~__context =
   List.iter (fun console ->
       Helpers.log_exn_continue (Printf.sprintf "Updating console: %s" (Ref.string_of console)) (fun () ->
@@ -76,6 +55,28 @@ let refresh_console_urls ~__context =
           Db.Console.set_location ~__context ~self:console ~value:url_should_be
         ) ()
     ) (Db.Console.get_all ~__context)
+
+let set_master_ip ~__context =
+  let ip =
+    match (Helpers.get_management_ip_addr ~__context) with
+      Some ip -> ip
+    | None ->
+      (error "Cannot read master IP address. Check the control interface has an IP address"; "") in
+  let host = Helpers.get_localhost ~__context in
+  Db.Host.set_address ~__context ~self:host ~value:ip;
+  refresh_console_urls ~__context
+
+(* NB the master doesn't use the heartbeat mechanism to track its own liveness so we
+   must make sure that live starts out as true because it will never be updated. *)
+let set_master_live ~__context =
+  let host = Helpers.get_localhost ~__context in
+  let metrics = Db.Host.get_metrics ~__context ~self:host in
+  debug "Setting Host_metrics.live to true for localhost";
+  Db.Host_metrics.set_live ~__context ~self:metrics ~value:true
+
+let set_master_pool_reference ~__context =
+  let pool = Helpers.get_pool ~__context in
+  Db.Pool.set_master ~__context ~self:pool ~value:(Helpers.get_localhost ~__context)
 
 (** CA-15449: after a pool restore database VMs which were running on slaves now have dangling resident_on fields.
     If these are control domains we destroy them, otherwise we reset them to Halted. *)

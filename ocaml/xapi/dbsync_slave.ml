@@ -95,6 +95,7 @@ let refresh_localhost_info ~__context info =
       [] in
   Db.Host.set_capabilities ~__context ~self:host ~value:caps;
   Db.Host.set_address ~__context ~self:host ~value:(get_my_ip_addr ~__context);
+  Dbsync_master.refresh_console_urls ~__context;
 
   let boot_time_key = "boot_time" in
   let boot_time_value = string_of_float (Date.to_float (get_start_time ())) in
