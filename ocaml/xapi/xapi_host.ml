@@ -776,7 +776,18 @@ let change_management_interface ~__context interface primary_address_type =
   Xapi_mgmt_iface.run ~__context ~mgmt_enabled:true;
   (* once the inventory file has been rewritten to specify new interface, sync up db with
      	   state of world.. *)
-  Xapi_mgmt_iface.on_dom0_networking_change ~__context
+  Xapi_mgmt_iface.on_dom0_networking_change ~__context;
+  (* Run update-issue to update the management interface in /etc/issue *)
+  let update_getty () =
+    (* Running update-issue service on best effort basis *)
+    try
+      ignore (Forkhelpers.execute_command_get_output !Xapi_globs.update_issue_script []);
+      ignore (Forkhelpers.execute_command_get_output !Xapi_globs.kill_process_script ["-q"; "-HUP"; "mingetty"; "agetty"])
+    with e ->
+      debug "update_getty at %s caught exception: %s"
+        __LOC__ (Printexc.to_string e)
+  in
+  update_getty ()
 
 let local_management_reconfigure ~__context ~interface =
   (* Only let this one through if we are in emergency mode, otherwise use
