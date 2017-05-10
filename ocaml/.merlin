@@ -5,5 +5,4 @@ S ./
 B ./
 S ./**
 B ./**
-S ../_build/ocaml/**
 B ../_build/ocaml/**

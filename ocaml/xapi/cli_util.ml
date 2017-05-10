@@ -108,7 +108,9 @@ let track_http_operation ?use_existing_task ?(progress_bar=false) fd rpc session
         then wait_for_task_completion_with_progress fd
         else wait_for_task_completion)
          rpc session_id task_id;
+       debug "waiting for receive_heartbeats...";
        Thread.join receive_heartbeats;
+       debug "receive_heartbeats finished.";
        if !response = Response OK then begin
          if Client.Task.get_status rpc session_id task_id = `success then begin
            let result = Client.Task.get_result rpc session_id task_id in
