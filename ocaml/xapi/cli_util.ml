@@ -43,13 +43,17 @@ let track callback rpc (session_id:API.ref_session) task =
          Client.Event.register ~rpc ~session_id ~classes;
          try
            (* Need to check once after registering to avoid a race *)
-           finished := Client.Task.get_status ~rpc ~session_id ~self:task <> `pending;
+           let status = Client.Task.get_status ~rpc ~session_id ~self:task in
+           finished := status <> `pending;
+           debug "XXXX Cli_util.track initial task status: %s" (Record_util.task_status_type_to_string status);
 
            while not(!finished) do
              let events = Event_types.events_of_rpc (Client.Event.next ~rpc ~session_id) in
              let events = List.map Event_helper.record_of_event events in
              List.iter (function
-                 | Event_helper.Task (t, Some t_rec) when t = task -> callback t_rec
+                 | Event_helper.Task (t, Some t_rec) when t = task ->
+                     debug "XXXX Cli_util.track Event.next task status: %s" (Record_util.task_status_type_to_string t_rec.API.task_status);
+                     callback t_rec
                  | _ -> ()
                ) events;
              let matches = function
