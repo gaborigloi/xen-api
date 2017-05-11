@@ -37,6 +37,7 @@ let track callback rpc (session_id:API.ref_session) task =
   let classes = [ "task" ] in
   let ret = finally
     (fun () ->
+       debug "XXXX Cli_util.track inner function called";
        let finished = ref false in
        while not(!finished) do
          Client.Event.register ~rpc ~session_id ~classes;
@@ -59,7 +60,9 @@ let track callback rpc (session_id:API.ref_session) task =
          with Api_errors.Server_error(code, _) when code = Api_errors.events_lost ->
            debug "Caught EVENTS_LOST; reregistering";
            Client.Event.unregister ~rpc ~session_id ~classes
-       done)
+       done;
+       debug "XXXX Cli_util.track inner function finished"
+    )
     (fun () -> Client.Event.unregister ~rpc ~session_id ~classes) in
   debug "XXXX Cli_util.track finished";
   ret
