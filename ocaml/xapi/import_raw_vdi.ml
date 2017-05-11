@@ -94,14 +94,16 @@ let localhost_handler rpc session_id vdi_opt (req: Request.t) (s: Unix.file_desc
     )
 
 let import vdi (req: Request.t) (s: Unix.file_descr) _ =
+  debug "XXXX import called";
   Xapi_http.assert_credentials_ok "VDI.import" ~http_action:"put_import_raw_vdi" req s;
 
   (* Perform the SR reachability check using a fresh context/task because
      	   we don't want to complete the task in the forwarding case *)
-  Server_helpers.exec_with_new_task "VDI.import"
+  let ret = Server_helpers.exec_with_new_task "VDI.import"
     (fun __context ->
        Helpers.call_api_functions ~__context
          (fun rpc session_id ->
+            debug "XXXX Import_raw_vdi.import inner function called";
             let bad_request msg err =
               error msg;
               TaskHelper.failed ~__context err;
@@ -114,7 +116,7 @@ let import vdi (req: Request.t) (s: Unix.file_descr) _ =
               | None, Some sr -> Some sr
               | None, None -> None
             in
-            match sr_opt with
+            let ret = match sr_opt with
             | Some sr ->
               debug "Checking whether SR is a valid reference: %s" (Ref.string_of sr);
               if not (Db.is_valid_ref __context sr) then
@@ -130,17 +132,23 @@ let import vdi (req: Request.t) (s: Unix.file_descr) _ =
                   None
               end
             | None ->
-              bad_request "Require an SR or VDI to import" Api_errors.(Server_error(vdi_missing,[]))
+              bad_request "Require an SR or VDI to import" Api_errors.(Server_error(vdi_missing,[])) in
+            debug "XXXX Import_raw_vdi.import inner function finished";
+            ret
          )
-    )
-
+    ) in
+  debug "XXXX Import_raw_vdi.import finished";
+  ret
 
 let handler (req: Request.t) (s: Unix.file_descr) _ =
+  debug "XXXX Import_raw_vdi.handler called";
   Xapi_http.assert_credentials_ok "VDI.import" ~http_action:"put_import_raw_vdi" req s;
 
   (* Using a fresh context/task because we don't want to complete the
      	   task in the forwarding case *)
-  Server_helpers.exec_with_new_task "VDI.import"
+  let ret = Server_helpers.exec_with_new_task "VDI.import"
     (fun __context ->
        ignore(import (vdi_of_req ~__context req) req s ())
-    )
+    ) in
+  debug "XXXX Import_raw_vdi.handler finished";
+  ret

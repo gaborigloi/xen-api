@@ -4333,6 +4333,7 @@ let patch_upload fd printer rpc session_id params =
   marshal fd (Command (Print patch_uuid))
 
 let update_upload fd printer rpc session_id params =
+  debug "XXXX Cli_operations.update_upload called";
   let filename = List.assoc "file-name" params in
   let make_command task_id =
     let prefix = uri_of_someone rpc session_id Master in
@@ -4347,19 +4348,27 @@ let update_upload fd printer rpc session_id params =
     let _ = debug "trying to post patch to uri:%s" uri in
     HttpPut (filename, uri)
   in
-  debug "XXXX update_upload: getting result";
+  debug "XXXX Cli_operations.update_upload: getting result";
   let result = track_http_operation fd rpc session_id make_command "host patch upload" in
-  debug "XXXX update_upload: got result";
+  debug "XXXX Cli_operations.update_upload: got result";
   let vdi_ref = API.Legacy.From.ref_VDI "" (Xml.parse_string result) in
   let update_ref =
-    try Client.Pool_update.introduce rpc session_id vdi_ref
-    with e ->
-      Client.VDI.destroy rpc session_id vdi_ref;
-      raise e
+    debug "XXXX Cli_operations.update_upload: calling Pool_update.introduce";
+    let ret =
+      try Client.Pool_update.introduce rpc session_id vdi_ref
+      with e ->
+        debug "XXXX Cli_operations.update_upload: calling VDI.destroy";
+        Client.VDI.destroy rpc session_id vdi_ref;
+        debug "XXXX Cli_operations.update_upload: VDI.destroy finished";
+        raise e in
+    debug "XXXX Cli_operations.update_upload: Pool_update.introduce finished";
+    ret
   in
   let update_uuid = Client.Pool_update.get_uuid rpc session_id update_ref in
   set_update_vdi_name rpc session_id update_ref;
-  marshal fd (Command (Print update_uuid))
+  let ret = marshal fd (Command (Print update_uuid)) in
+  debug "XXXX Cli_operations.update_upload called";
+  ret
 
 let patch_clean printer rpc session_id params =
   let uuid = List.assoc "uuid" params in

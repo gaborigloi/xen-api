@@ -33,8 +33,9 @@ exception Cli_failure of string
 
 (** call [callback task_record] on every update to the task, until it completes or fails *)
 let track callback rpc (session_id:API.ref_session) task =
+  debug "XXXX Cli_util.track called";
   let classes = [ "task" ] in
-  finally
+  let ret = finally
     (fun () ->
        let finished = ref false in
        while not(!finished) do
@@ -59,7 +60,9 @@ let track callback rpc (session_id:API.ref_session) task =
            debug "Caught EVENTS_LOST; reregistering";
            Client.Event.unregister ~rpc ~session_id ~classes
        done)
-    (fun () -> Client.Event.unregister ~rpc ~session_id ~classes)
+    (fun () -> Client.Event.unregister ~rpc ~session_id ~classes) in
+  debug "XXXX Cli_util.track finished";
+  ret
 
 let result_from_task rpc session_id remote_task =
   match Client.Task.get_status rpc session_id remote_task with
@@ -95,28 +98,33 @@ let wait_for_task_completion_with_progress fd =
     )
 
 let track_http_operation ?use_existing_task ?(progress_bar=false) fd rpc session_id (make_command: API.ref_task -> command) label =
+  debug "XXXX Cli_util.track_http_operation called";
   (* Need to associate the operation with a task so we can check for failure *)
   let task_id = match use_existing_task with None -> Client.Task.create rpc session_id label "" | Some t -> t in
-  finally
+  let ret = finally
     (fun () ->
        marshal fd (Command (make_command task_id));
        let response = ref (Response Wait) in
        let receive_heartbeats = Thread.create
            (fun () -> while !response = Response Wait do response := unmarshal fd done) () in
        (* Wait for the task to complete *)
+       debug "XXXX Cli_util.track_http_operation: wait for the task to complete";
        (if progress_bar
         then wait_for_task_completion_with_progress fd
         else wait_for_task_completion)
          rpc session_id task_id;
-       debug "waiting for receive_heartbeats...";
+       debug "XXXX Cli_util.track_http_operation: task completed";
+       debug "XXXX Cli_util.track_http_operation: waiting for receive_heartbeats...";
        Thread.join receive_heartbeats;
-       debug "receive_heartbeats finished.";
+       debug "XXXX Cli_util.track_http_operation: receive_heartbeats finished.";
        if !response = Response OK then begin
          if Client.Task.get_status rpc session_id task_id = `success then begin
+           debug "XXXX Cli_util.track_http_operation: task_status success";
            let result = Client.Task.get_result rpc session_id task_id in
            debug "result was [%s]" result;
            result
          end else begin
+           debug "XXXX Cli_util.track_http_operation: task_status not success";
            let params = Client.Task.get_error_info rpc session_id task_id in
            raise (Api_errors.Server_error(List.hd params, List.tl params));
          end
@@ -143,7 +151,9 @@ let track_http_operation ?use_existing_task ?(progress_bar=false) fd rpc session
        match use_existing_task with
          None -> log_exn_continue "destroying task" (fun x -> Client.Task.destroy rpc session_id x) task_id
        | Some _ -> ()
-    )
+    ) in
+  debug "XXXX Cli_util.track_http_operation called";
+  ret
 
 
 (* Rewrite the provisioning XML fragment to create all disks on a new, specified SR *)
