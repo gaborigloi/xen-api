@@ -210,6 +210,7 @@ let failed ~__context exn =
          Db_actions.DB_Action.Task.set_backtrace ~__context ~self ~value:(Sexplib.Sexp.to_string (Backtrace.(sexp_of_t (get exn))));
          Db_actions.DB_Action.Task.set_finished ~__context ~self ~value:(Date.of_float (Unix.time()));
          Db_actions.DB_Action.Task.set_allowed_operations ~__context ~self ~value:[];
+         debug "XXXX TaskHelper.failed setting the task status to `cancelled or `failure";
          if code=Api_errors.task_cancelled
          then Db_actions.DB_Action.Task.set_status ~__context ~self ~value:`cancelled
          else Db_actions.DB_Action.Task.set_status ~__context ~self ~value:`failure

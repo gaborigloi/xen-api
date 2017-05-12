@@ -106,8 +106,9 @@ let import vdi (req: Request.t) (s: Unix.file_descr) _ =
             debug "XXXX Import_raw_vdi.import inner function called";
             let bad_request msg err =
               error msg;
+              debug "XXXX Import_raw_vdi.import setting the task to failed";
               TaskHelper.failed ~__context err;
-              debug "Sending back a HTTP 400 error code";
+              debug "XXXX Import_raw_vdi.import Sending back a HTTP 400 error code";
               Http_svr.headers s (Http.http_400_badrequest ());
               None
             in
@@ -120,9 +121,9 @@ let import vdi (req: Request.t) (s: Unix.file_descr) _ =
             | Some sr ->
               debug "Checking whether SR is a valid reference: %s" (Ref.string_of sr);
               if not (Db.is_valid_ref __context sr) then
-                bad_request "Invalid SR reference" Api_errors.(Server_error(handle_invalid, ["SR"; Ref.string_of sr]))
+                bad_request "XXXX Import_raw_vdi.import Invalid SR reference" Api_errors.(Server_error(handle_invalid, ["SR"; Ref.string_of sr]))
               else begin
-                debug "Checking whether localhost can see SR: %s" (Ref.string_of sr);
+                debug "XXXX Import_raw_vdi.import Checking whether localhost can see SR: %s" (Ref.string_of sr);
                 if (Importexport.check_sr_availability ~__context sr)
                 then localhost_handler rpc session_id vdi req s
                 else
@@ -132,7 +133,7 @@ let import vdi (req: Request.t) (s: Unix.file_descr) _ =
                   None
               end
             | None ->
-              bad_request "Require an SR or VDI to import" Api_errors.(Server_error(vdi_missing,[])) in
+              bad_request "XXXX Import_raw_vdi.import Require an SR or VDI to import" Api_errors.(Server_error(vdi_missing,[])) in
             debug "XXXX Import_raw_vdi.import inner function finished";
             ret
          )
