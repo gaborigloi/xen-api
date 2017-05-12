@@ -104,8 +104,13 @@ let init () =
   Context.__make_task := make
 
 let operate_on_db_task ~__context f =
-  if Context.task_in_database __context
-  then f (Context.get_task_id __context)
+  debug "XXXX TaskHelper.operate_on_db_task called";
+  let ret = if Context.task_in_database __context then begin
+    debug "XXXX TaskHelper.operate_on_db_task task in database";
+    f (Context.get_task_id __context);
+  end else debug "XXXX TaskHelper.operate_on_db_task task NOT in database" in
+  debug "XXXX TaskHelper.operate_on_db_task finished";
+  ret
 
 let set_description ~__context value =
   operate_on_db_task ~__context
@@ -200,11 +205,13 @@ let cancel ~__context =
            (status_to_string status))
 
 let failed ~__context exn =
+  debug "XXXX TaskHelper.failed called";
   let code, params = ExnHelper.error_of_exn exn in
-  operate_on_db_task ~__context
+  let ret = operate_on_db_task ~__context
     (fun self ->
+       debug "XXXX TaskHelper.failed inner function called";
        let status = Db_actions.DB_Action.Task.get_status ~__context ~self in
-       if status = `pending then begin
+       let ret = if status = `pending then begin
          Db_actions.DB_Action.Task.set_progress ~__context ~self ~value:1.;
          Db_actions.DB_Action.Task.set_error_info ~__context ~self ~value:(code::params);
          Db_actions.DB_Action.Task.set_backtrace ~__context ~self ~value:(Sexplib.Sexp.to_string (Backtrace.(sexp_of_t (get exn))));
@@ -218,7 +225,11 @@ let failed ~__context exn =
          debug "the status of %s is %s; cannot set it to %s"
            (Ref.really_pretty_and_small self)
            (status_to_string status)
-           (if code=Api_errors.task_cancelled then "`cancelled" else "`failure"))
+           (if code=Api_errors.task_cancelled then "`cancelled" else "`failure") in
+       debug "XXXX TaskHelper.failed inner function finished";
+       ret) in
+  debug "XXXX TaskHelper.failed finished";
+  ret
 
 
 type id =
