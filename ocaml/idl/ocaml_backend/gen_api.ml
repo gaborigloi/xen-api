@@ -102,21 +102,27 @@ let gen_record_type ~with_module highapi tys =
     | _                :: t -> aux accu t in
   aux [] tys
 
-let gen_client highapi =
-  List.iter (List.iter print)
-    (List.between [""] [
-        [
-          "open API";
-          "open Rpc";
-          "module type RPC = sig val rpc: Rpc.t -> Rpc.t end";
-          "module type IO = sig type 'a t val bind : 'a t -> ('a -> 'b t) -> 'b t val return : 'a -> 'a t end";
-          "";
-          "let server_failure code args = raise (Api_errors.Server_error (code, args))";
-        ];
-        O.Module.strings_of (Gen_client.gen_module highapi);
-        [ "module Id = struct type 'a t = 'a let bind x f = f x let return x = x end";
-          "module Client = ClientF(Id)" ]
-      ])
+let with_coverage_exclusion f =
+  print "(*BISECT-IGNORE-BEGIN*)";
+  f ();
+  print "(*BISECT-IGNORE-END*)"
+
+let gen_client highapi = with_coverage_exclusion (fun () ->
+    List.iter (List.iter print)
+      (List.between [""] [
+          [
+            "open API";
+            "open Rpc";
+            "module type RPC = sig val rpc: Rpc.t -> Rpc.t end";
+            "module type IO = sig type 'a t val bind : 'a t -> ('a -> 'b t) -> 'b t val return : 'a -> 'a t end";
+            "";
+            "let server_failure code args = raise (Api_errors.Server_error (code, args))";
+          ];
+          O.Module.strings_of (Gen_client.gen_module highapi);
+          [ "module Id = struct type 'a t = 'a let bind x f = f x let return x = x end";
+            "module Client = ClientF(Id)" ]
+        ])
+  )
 
 let add_set_enums types =
   List.concat (
@@ -126,85 +132,90 @@ let add_set_enums types =
           if List.exists (fun ty2 -> ty2 = DT.Set ty) types then [ty] else [DT.Set ty; ty]
         | _ -> [ty]) types)
 
-let gen_client_types highapi =
-  let all_types = DU.Types.of_objects (Dm_api.objects_of_api highapi) in
-  let all_types = add_set_enums all_types in
-  List.iter (List.iter print)
-    (List.between [""] [
-        [
-          "type failure = (string list) [@@deriving rpc]";
-          "let response_of_failure code params =";
-          "  Rpc.failure (rpc_of_failure (code::params))";
-          "let response_of_fault code =";
-          "  Rpc.failure (rpc_of_failure ([\"Fault\"; code]))";
-        ]; [
-          "include Rpc";
-          "type string_list = string list [@@deriving rpc]";
-        ]; [
-          "module Ref = struct";
-          "  include Ref";
-          "  let rpc_of_t _ x = rpc_of_string (Ref.string_of x)";
-          "  let t_of_rpc _ x = of_string (string_of_rpc x);";
-          "end";
-        ]; [
-          "module Date = struct";
-          "  open Stdext";
-          "  include Date";
-          "  let rpc_of_iso8601 x = DateTime (Date.to_string x)";
-          "  let iso8601_of_rpc = function String x | DateTime x -> Date.of_string x | _ -> failwith \"Date.iso8601_of_rpc\"";
-          "end";
-        ]; [
-          "let on_dict f = function | Rpc.Dict x -> f x | _ -> failwith \"Expected Dictionary\""
-        ];
-        gen_non_record_type highapi all_types;
-        gen_record_type ~with_module:true highapi all_types;
-        O.Signature.strings_of (Gen_client.gen_signature highapi);
-        [ "module Legacy = struct";
-          "open XMLRPC";
-          "module D=Debug.Make(struct let name=\"legacy_marshallers\" end)";
-          "open D" ];
-        GenOCaml.gen_of_xmlrpc highapi all_types;
-        GenOCaml.gen_to_xmlrpc highapi all_types;
-        ["end"];
-      ])
+let gen_client_types highapi = with_coverage_exclusion (fun () ->
+    let all_types = DU.Types.of_objects (Dm_api.objects_of_api highapi) in
+    let all_types = add_set_enums all_types in
+    List.iter (List.iter print)
+      (List.between [""] [
+          [
+            "type failure = (string list) [@@deriving rpc]";
+            "let response_of_failure code params =";
+            "  Rpc.failure (rpc_of_failure (code::params))";
+            "let response_of_fault code =";
+            "  Rpc.failure (rpc_of_failure ([\"Fault\"; code]))";
+          ]; [
+            "include Rpc";
+            "type string_list = string list [@@deriving rpc]";
+          ]; [
+            "module Ref = struct";
+            "  include Ref";
+            "  let rpc_of_t _ x = rpc_of_string (Ref.string_of x)";
+            "  let t_of_rpc _ x = of_string (string_of_rpc x);";
+            "end";
+          ]; [
+            "module Date = struct";
+            "  open Stdext";
+            "  include Date";
+            "  let rpc_of_iso8601 x = DateTime (Date.to_string x)";
+            "  let iso8601_of_rpc = function String x | DateTime x -> Date.of_string x | _ -> failwith \"Date.iso8601_of_rpc\"";
+            "end";
+          ]; [
+            "let on_dict f = function | Rpc.Dict x -> f x | _ -> failwith \"Expected Dictionary\""
+          ];
+          gen_non_record_type highapi all_types;
+          gen_record_type ~with_module:true highapi all_types;
+          O.Signature.strings_of (Gen_client.gen_signature highapi);
+          [ "module Legacy = struct";
+            "open XMLRPC";
+            "module D=Debug.Make(struct let name=\"legacy_marshallers\" end)";
+            "open D" ];
+          GenOCaml.gen_of_xmlrpc highapi all_types;
+          GenOCaml.gen_to_xmlrpc highapi all_types;
+          ["end"];
+        ])
+  )
 
-let gen_server highapi =
-  List.iter (List.iter print)
-    (List.between [""] [
-        [ "open API"; "open Server_helpers" ];
-        O.Module.strings_of (Gen_server.gen_module highapi);
-      ])
+let gen_server highapi = with_coverage_exclusion (fun () ->
+    List.iter (List.iter print)
+      (List.between [""] [
+          [ "open API"; "open Server_helpers" ];
+          O.Module.strings_of (Gen_server.gen_module highapi);
+        ])
+  )
 
-let gen_custom_actions highapi =
-  List.iter (List.iter print)
-    (List.between [""] [
-        [ "open API" ];
-        O.Signature.strings_of (Gen_empty_custom.gen_signature Gen_empty_custom.signature_name None highapi);
-        O.Module.strings_of (Gen_empty_custom.gen_release_module highapi);
-      ])
+let gen_custom_actions highapi = with_coverage_exclusion (fun () ->
+    List.iter (List.iter print)
+      (List.between [""] [
+          [ "open API" ];
+          O.Signature.strings_of (Gen_empty_custom.gen_signature Gen_empty_custom.signature_name None highapi);
+          O.Module.strings_of (Gen_empty_custom.gen_release_module highapi);
+        ])
+  )
 
 open Gen_db_actions
 
-let gen_db_actions highapi =
-  let all_types = DU.Types.of_objects (Dm_api.objects_of_api highapi) in
-  let only_records = List.filter (function DT.Record _ -> true | _ -> false) all_types in
+let gen_db_actions highapi = with_coverage_exclusion (fun () ->
+    let all_types = DU.Types.of_objects (Dm_api.objects_of_api highapi) in
+    let only_records = List.filter (function DT.Record _ -> true | _ -> false) all_types in
 
-  List.iter (List.iter print)
-    (List.between [""]
-       [
-         [ "open API" ];
+    List.iter (List.iter print)
+      (List.between [""]
+         [
+           [ "open API" ];
 
-         (* These records have the hidden fields inside *)
-         gen_record_type ~with_module:false highapi only_records;
+           (* These records have the hidden fields inside *)
+           gen_record_type ~with_module:false highapi only_records;
 
-         (* NB record types are ignored by dm_to_string and string_to_dm *)
-         O.Module.strings_of (dm_to_string all_types);
-         O.Module.strings_of (string_to_dm all_types);
-         O.Module.strings_of (db_action highapi); ]
-     @ (List.map O.Module.strings_of (Gen_db_check.all highapi)) @ [
+           (* NB record types are ignored by dm_to_string and string_to_dm *)
+           O.Module.strings_of (dm_to_string all_types);
+           O.Module.strings_of (string_to_dm all_types);
+           O.Module.strings_of (db_action highapi); ]
+       @ (List.map O.Module.strings_of (Gen_db_check.all highapi)) @ [
 
-     ]
-    )
+       ]
+      )
+  )
 
-let gen_rbac highapi =
-  print (Gen_rbac.gen_permissions_of_static_roles highapi)
+let gen_rbac highapi = with_coverage_exclusion (fun () ->
+    print (Gen_rbac.gen_permissions_of_static_roles highapi)
+  )
