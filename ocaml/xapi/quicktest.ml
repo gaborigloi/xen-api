@@ -142,64 +142,6 @@ let event_from_parallel_test session_id =
   then failed test "Event.from got cancelled by mistake"
   else success test
 
-let object_level_event_test session_id =
-  let test = make_test "Event.from object-level test" 0 in
-  start test;
-  let m = Mutex.create () in
-  let finished = ref false in
-  let reported_failure = ref false in
-  (* Let's play with templates *)
-  let vms = Client.VM.get_all !rpc session_id in
-  if List.length vms < 2 then failwith "Test needs 2 VMs";
-  let vm_a = List.hd vms in
-  let vm_b = List.hd (List.tl vms) in
-  debug test (Printf.sprintf "watching %s" (Ref.string_of vm_a));
-  debug test (Printf.sprintf "ignoring %s" (Ref.string_of vm_b));
-  let key = "object_level_event_next" in
-  begin try Client.VM.remove_from_other_config !rpc session_id vm_a key with _ -> () end;
-  begin try Client.VM.remove_from_other_config !rpc session_id vm_b key with _ -> () end;
-
-  let (_: Thread.t) = Thread.create
-      (fun () ->
-         let token = ref "" in
-         while not (Mutex.execute m (fun () -> !finished)) do
-           let events = Client.Event.from !rpc session_id [ Printf.sprintf "vm/%s" (Ref.string_of vm_a) ] (!token) 10. |> event_from_of_rpc in
-           List.iter
-             (fun event ->
-                if event.reference <> Ref.string_of vm_a then begin
-                  debug test (Printf.sprintf "event on %s which we aren't watching" event.reference);
-                  Mutex.execute m
-                    (fun () ->
-                       reported_failure := true;
-                       failed test (Printf.sprintf "got unexpected event (new token = %s)" !token);
-                       finished := true;
-                    )
-                end
-             ) events.events;
-           token := events.token;
-           let oc = Client.VM.get_other_config !rpc session_id vm_a in
-           if List.mem_assoc key oc && (List.assoc key oc) = "1"
-           then Mutex.execute m (fun () ->
-               debug test (Printf.sprintf "got expected event (new token = %s)" !token);
-               finished := true;
-             );
-         done
-      ) () in
-  Thread.delay 1.;
-  Client.VM.add_to_other_config !rpc session_id vm_b key "1";
-  Thread.delay 1.;
-  Client.VM.remove_from_other_config !rpc session_id vm_b key;
-  Client.VM.add_to_other_config !rpc session_id vm_a key "1";
-  Thread.delay 1.;
-  Mutex.execute m
-    (fun () ->
-       if not (!reported_failure) then begin
-         if !finished
-         then success test
-         else failed test "failed to see object-level event change"
-       end
-    )
-
 let event_message_test session_id =
   let test = make_test "Message creation event test" 1 in
   start test;

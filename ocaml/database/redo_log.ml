@@ -320,26 +320,6 @@ let rec read_read_response sock fn_db fn_delta expected_gen_count latest_respons
     else raise (RedoLogFailure error)
   | e -> raise (CommunicationsProblem ("unrecognised read response prefix ["^e^"]"))
 
-let action_empty sock datasockpath =
-  R.debug "Performing empty";
-  (* Compute desired response time *)
-  let latest_response_time = get_latest_response_time !Db_globs.redo_log_max_block_time_empty in
-  (* Empty *)
-  let str = "empty_____" in
-  Unixext.time_limited_write sock (String.length str) str latest_response_time;
-  (* Read response *)
-  let response_length = 10 in
-  let response = Unixext.time_limited_read sock response_length latest_response_time in
-  match response with
-  | "empty|ack_" -> ()
-  | "empty|nack" ->
-    (* Read the error message *)
-    let error = read_length_and_string sock latest_response_time in
-    R.warn "Emptying was unsuccessful: [%s]" error;
-    if error = Block_device_io_errors.timeout_error_msg then raise Unixext.Timeout
-    else raise (RedoLogFailure error)
-  | e -> raise (CommunicationsProblem ("unrecognised empty response ["^e^"]"))
-
 let action_read fn_db fn_delta sock datasockpath =
   R.debug "Performing read";
   (* Compute desired response time *)
@@ -732,10 +712,6 @@ let apply fn_db fn_delta log =
       (fun () -> connect_and_perform_action (action_read fn_db fn_delta) "read from redo log" log)
       (fun () -> ready_to_write := true)
   end
-
-let empty log =
-  if is_enabled log then
-    connect_and_perform_action (action_empty) "invalidate the redo log" log
 
 (** ------------------------------------------------ *)
 (** Functions which operate on all active redo_logs. *)

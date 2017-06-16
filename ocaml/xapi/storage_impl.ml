@@ -135,8 +135,6 @@ module Vdi = struct
     let rest = List.filter (fun (u, _) -> u <> dp) t.dps in
     { t with dps = if state = Vdi_automaton.Detached then rest else (dp, state) :: rest }
 
-  let get_leaked t = t.leaked
-
   let leaked t (x: Dp.t) = List.mem x t.leaked
   let all _ _ = true
 
@@ -223,7 +221,6 @@ module Errors = struct
 
   type t = error list [@@deriving rpc]
 
-  let max = 100
   let errors = ref []
   let errors_m = Mutex.create ()
   let add dp sr vdi code =
@@ -951,8 +948,6 @@ let initialise () =
   end else info "No storage state is persisted in %s; creating blank database" !host_state_path
 
 module Local_domain_socket = struct
-  let path = Filename.concat "/var/lib/xcp" "storage"
-
   let xmlrpc_handler process req bio _ =
     let body = Http_svr.read_body req bio in
     let s = Buf_io.fd_of bio in

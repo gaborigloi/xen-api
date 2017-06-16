@@ -113,9 +113,6 @@ let get_obj_name_of_ref obj_ref =
 let get_obj_uuid_of_ref obj_ref =
   get_obj_of_ref_common obj_ref (fun irec -> Some(irec.Ref_index.uuid))
 
-let get_obj_ref_of_ref obj_ref =
-  get_obj_of_ref_common obj_ref (fun irec -> Some(irec.Ref_index._ref))
-
 let get_sexpr_arg name name_of_ref uuid_of_ref ref_value : SExpr.t =
   SExpr.Node
     ( (* s-expr lib should properly escape malicious values *)

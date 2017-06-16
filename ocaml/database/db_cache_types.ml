@@ -48,14 +48,11 @@ module type MAP = sig
   type value
   val empty : t
   val add: Time.t -> string -> value -> t -> t
-  val remove : Time.t -> string -> t -> t
   val fold : (string -> Stat.t -> value -> 'b -> 'b) -> t -> 'b -> 'b
   val fold_over_recent : Time.t -> (string -> Stat.t -> value -> 'b -> 'b) -> t -> 'b -> 'b
   val find : string -> t -> value
-  val mem : string -> t -> bool
   val iter : (string -> value -> unit) -> t -> unit
   val update : int64 -> string -> value -> (value -> value) -> t -> t
-  val touch : int64 -> string -> value -> t -> t
 end
 
 (** A specialised StringMap whose range type is V.t, and which keeps a record of when records are created/updated *)
@@ -256,9 +253,6 @@ module Database = struct
   let register_callback name f x =
     { x with callbacks = (name, f) :: x.callbacks }
 
-  let unregister_callback name x =
-    { x with callbacks = List.filter (fun (x, _) -> x <> name) x.callbacks }
-
   let notify e db =
     List.iter (fun (name, f) ->
         try
@@ -361,7 +355,6 @@ let remove_from_map key t =
 
 
 let (++) f g x = f (g x)
-let id x = x
 
 let is_valid tblname objref db =
   Table.mem objref (TableSet.find tblname (Database.tableset db))

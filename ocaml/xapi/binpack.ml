@@ -272,11 +272,6 @@ let approximate_bin_pack = {
     );
 }
 
-let all_heuristics = [
-  bin_pack_every_combination;
-  approximate_bin_pack;
-]
-
 let choose_heuristic config =
   (* If the number of combinations to check is small, perform all possible bin-packings: this will
      produce good solutions for small pool sizes. For larger pools we switch back to a less
@@ -289,12 +284,4 @@ let choose_heuristic config =
       if binomial n r ** (factorial r) < 3500L then bin_pack_every_combination else approximate_bin_pack
     with Overflow -> approximate_bin_pack
   end
-
-let plan_for_n_failures config =
-  let h = choose_heuristic config in
-  Printf.printf "Chosen heuristic: %s\n" h.name;
-  h.plan_always_possible config
-
-
-
 

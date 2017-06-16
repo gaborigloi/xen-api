@@ -15,8 +15,6 @@
 
 (** {2 VDI related} *)
 
-val get_static_device : string -> string option
-(** Finds an attached metadata VDI with a given reason *)
 val minimum_vdi_size : int64
 (** Minimum size for redo log VDI *)
 val redo_log_sm_config : (string * string) list
@@ -41,8 +39,6 @@ type redo_log = {
 
 (** {2 Enabling and disabling writing} *)
 
-val is_enabled : redo_log -> bool
-(** Returns [true] iff writing deltas to the block device is enabled. *)
 val enable : redo_log -> string -> unit
 (** Enables writing deltas to the block device. Subsequent modifications to the database will be persisted to the block device. Takes a static-VDI reason as argument to select the device to use. *)
 val enable_block : redo_log -> string -> unit
@@ -88,18 +84,6 @@ type t =
   (** [WriteField (tblname, objref, fldname, newval)]
       represents the write to the field with name [fldname] of a row in table [tblname] with key [objref], overwriting its value with [newval]. *)
 
-val write_db : Generation.t -> (Unix.file_descr -> unit) -> redo_log -> unit
-(** Write a database.
-    This function is best-effort only and does not raise any exceptions in the case of error.
-    [write_db gen_count f] is used to write a database with generation count [gen_count] to the block device.
-    A file descriptor is passed to [f] which is expected to write the contents of the database to it. *)
-
-val write_delta : Generation.t -> t -> (unit -> unit) -> redo_log -> unit
-(** Write a database delta.
-    This function is best-effort only and does not raise any exceptions in the case of error.
-    [write_delta gen_count delta db_flush_fn] writes a delta [delta] with generation count [gen_count] to the block device.
-    If the redo log wishes to flush the database before writing the delta, it will invoke [db_flush_fn]. It is expected that this function implicitly attempts to reconnect to the block device I/O process if not already connected. *)
-
 val apply : (Generation.t -> Unix.file_descr -> int -> float -> unit) -> (Generation.t -> t -> unit) -> redo_log -> unit
 (** Read from the block device.
     This function is best-effort only and does not raise any exceptions in the case of error.
@@ -107,10 +91,6 @@ val apply : (Generation.t -> Unix.file_descr -> int -> float -> unit) -> (Genera
     The block device will consist of a sequence of zero or more databases and database deltas.
     For each database, [db_fn] is invoked with the database's generation count, a file descriptor from which to read the database's contents, the length of the database in bytes and the latest response time. The [db_fn] function may raise {!Unixext.Timeout} if the transfer is not complete by the latest response time.
     For each database delta, [delta_fn] is invoked with the delta's generation count and the value of the delta. *)
-
-val empty : redo_log -> unit
-(** Invalidate the block device. This means that subsequent attempts to read from the block device will not find anything.
-    This function is best-effort only and does not raise any exceptions in the case of error. *)
 
 val flush_db_to_redo_log: Db_cache_types.Database.t -> redo_log -> bool
 (** Immediately write the given database to the given redo_log instance *)

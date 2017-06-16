@@ -66,10 +66,6 @@ let retrieve_wlb_recommendations ~__context ~vm =
 
 let assert_agile ~__context ~self = Agility.vm_assert_agile ~__context ~self
 
-(* helpers *)
-let immediate_complete ~__context   =
-  Helpers.progress ~__context  (0.0 -. 1.0)
-
 (* API *)
 let set_actions_after_shutdown ~__context ~self ~value =
   Db.VM.set_actions_after_shutdown ~__context ~self ~value
@@ -205,14 +201,6 @@ let set_memory ~__context ~self ~value =
   set_memory_limits ~__context ~self
     ~static_min:(Db.VM.get_memory_static_min ~__context ~self)
     ~static_max:value ~dynamic_min:value ~dynamic_max:value
-
-(* If HA is enabled on the Pool and the VM is marked as always_run then block the action *)
-let assert_not_ha_protected ~__context ~vm =
-  let pool = Helpers.get_pool ~__context in
-  let always_run = Db.VM.get_ha_always_run ~__context ~self:vm in
-  let priority = Db.VM.get_ha_restart_priority ~__context ~self:vm in
-  if Db.Pool.get_ha_enabled ~__context ~self:pool && (Helpers.vm_should_always_run always_run priority)
-  then raise (Api_errors.Server_error(Api_errors.vm_is_protected, [ Ref.string_of vm ]))
 
 let pause ~__context ~vm =
   Xapi_xenops.pause ~__context ~self:vm

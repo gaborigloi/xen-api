@@ -24,27 +24,6 @@ let remoterpc host xml =
   let open Xmlrpc_client in
   XMLRPC_protocol.rpc ~srcstr:"perftest" ~dststr:"remotexapi" ~transport:(SSL(SSL.make (), host, 443)) ~http:(xmlrpc ~version:"1.1" "/") xml
 
-(* Rewrite the provisioning XML fragment to create all disks on a new, specified SR. This is cut-n-pasted from cli_util.ml *)
-let rewrite_provisioning_xml rpc session_id new_vm sr_uuid =
-  let rewrite_xml xml newsrname =
-    let rewrite_disk = function
-      | Xml.Element("disk",params,[]) ->
-        Xml.Element("disk",List.map (fun (x,y) -> if x<>"sr" then (x,y) else ("sr",newsrname)) params,[])
-      | x -> x
-    in
-    match xml with
-    | Xml.Element("provision",[],disks) -> Xml.Element("provision",[],List.map rewrite_disk disks)
-    | x -> x in
-
-  let other_config = Client.VM.get_other_config rpc session_id new_vm in
-  if List.mem_assoc "disks" other_config then
-    begin
-      let xml = Xml.parse_string (List.assoc "disks" other_config) in
-      Client.VM.remove_from_other_config rpc session_id new_vm "disks";
-      let newdisks = (rewrite_xml xml sr_uuid) in
-      Client.VM.add_to_other_config rpc session_id new_vm "disks" (Xml.to_string newdisks)
-    end
-
 let parse_sr_probe_for_iqn (xml: string) : string list =
   match Xml.parse_string xml with
   | Xml.Element("iscsi-target-iqns", _, children) ->

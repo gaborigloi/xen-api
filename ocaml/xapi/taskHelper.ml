@@ -20,8 +20,6 @@ open Threadext
 
 type t = API.ref_task
 
-let now () = Date.of_float (Unix.time ())
-
 (* creates a new task *)
 let make ~__context ~http_other_config ?(description="") ?session_id ?subtask_of label : (t * t Uuid.t) =
   let uuid = Uuid.make_uuid () in
@@ -120,12 +118,6 @@ let add_to_other_config ~__context key value =
 let set_progress ~__context value =
   operate_on_db_task ~__context
     (fun self -> Db_actions.DB_Action.Task.set_progress ~__context ~self ~value)
-
-let set_external_pid ~__context pid =
-  operate_on_db_task ~__context
-    (fun self -> Db_actions.DB_Action.Task.set_externalpid ~__context ~self ~value:(Int64.of_int pid))
-
-let clear_external_pid ~__context = set_external_pid ~__context (-1)
 
 let set_result_on_task ~__context task_id result =
   match result with

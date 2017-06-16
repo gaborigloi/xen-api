@@ -73,6 +73,4 @@ let restart_fn : (unit -> unit) ref = ref (fun () -> exit 0)
 
 let https_port = ref 443
 
-let snapshot_db = Filename.concat "/var/lib/xcp" "snapshot.db"
-
 let db_conf_path = ref (Filename.concat "/etc/xensource" "db.conf")

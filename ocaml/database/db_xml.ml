@@ -34,8 +34,6 @@ module To = struct
   let pair (output: Xmlm.output) (key: string) (v: string) =
     Xmlm.output output (`El_start (make_tag "pair" [ "key", key; "value", v ]));
     Xmlm.output output `El_end
-  (* Write out a string *)
-  let string (output: Xmlm.output) (key: string) (x: string) = pair output key x
   (* Write out an int *)
   let int (output: Xmlm.output) (key: string) (x: int) = pair output key (string_of_int x)
   (* Write out an int64 *)

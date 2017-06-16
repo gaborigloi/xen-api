@@ -66,10 +66,6 @@ let execute_hook ~__context ~script_name ~args ~reason =
                  ))
     scripts
 
-let execute_vm_hook ~__context ~reason ~vm =
-  let vmuuid = Db.VM.get_uuid ~__context ~self:vm in
-  execute_hook ~__context ~args:[ "-vmuuid"; vmuuid ] ~reason
-
 let execute_host_hook ~__context ~reason ~host =
   let uuid = Db.Host.get_uuid ~__context ~self:host in
   execute_hook ~__context ~args:[ "-hostuuid"; uuid ] ~reason

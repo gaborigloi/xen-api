@@ -284,11 +284,6 @@ let cancel_tasks ~__context ~self ~all_tasks_in_db ~task_ids =
     ~parent:(default Ref.null parent);
   r*)
 
-let require_uuid vdi_info =
-  match vdi_info.Smint.vdi_info_uuid with
-  | Some uuid -> uuid
-  | None -> failwith "SM backend failed to return <uuid> field"
-
 (* This function updates xapi's database for a single VDI. The row will be created if it doesn't exist *)
 let update_vdi_db ~__context ~sr newvdi =
   let open Storage_interface in

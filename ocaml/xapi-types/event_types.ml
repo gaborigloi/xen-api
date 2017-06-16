@@ -58,19 +58,6 @@ type event_from = {
   token: token;
 } [@@deriving rpc]
 
-let rec rpc_of_event_from e =
-  Rpc.Dict
-    [ ("events",
-       (Rpc.Enum (List.map rpc_of_event e.events)));
-      ("valid_ref_counts",
-       (let dict =
-          List.map
-            (fun (key, count) ->
-               (key, (Rpc.Int32 count)))
-            e.valid_ref_counts
-        in Rpc.Dict dict));
-      ("token", (rpc_of_token e.token)) ]
-
 (** Return result of an events.from call *)
 
 open Printf

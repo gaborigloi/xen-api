@@ -439,18 +439,6 @@ let host_vbridge_remove printer rpc session_id params =
     [n] -> Client.Network.destroy rpc session_id n
   | _ -> failwith "Multiple networks found!"
 
-let vdi_param_set printer rpc session_id params =
-  let vdi = List.assoc "vdi" params in
-  let param_name=List.assoc "param-name" params in
-  let param_value=List.assoc "param-value" params in
-  let vdi_ref = Client.VDI.get_by_uuid rpc session_id vdi in
-  match param_name with
-    "name-label" -> Client.VDI.set_name_label rpc session_id vdi_ref param_value
-  | "name-description" -> Client.VDI.set_name_description rpc session_id vdi_ref param_value
-  | "read-only" -> Client.VDI.set_read_only rpc session_id vdi_ref (bool_of_string param_value)
-  | "sharable" -> Client.VDI.set_sharable rpc session_id vdi_ref (bool_of_string param_value)
-  | _ -> failwith ("Unknown param "^param_name)
-
 
 let vm_vif_add printer rpc session_id params =
   let op vm =

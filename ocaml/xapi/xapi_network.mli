@@ -55,11 +55,6 @@ val detach : __context:Context.t -> bridge_name:string -> managed:bool -> unit
 val attach :
   __context:Context.t -> network:[ `network ] Ref.t -> host:'a -> unit
 
-(** [register_vif __context vif] is called both before adding a VIF to a Network, to
-    make sure the network doesn't disappear beneath it, and also from the dbsync sync_devices
-    code at start of day. *)
-val register_vif : __context:Context.t -> API.ref_VIF -> unit
-
 (** [deregister_vif __context vif] is called before cleaning up a VIF device. Once this
     happens, it is safe to clean up the underlying network switch/bridge *)
 val deregister_vif : __context:Context.t -> API.ref_VIF -> unit

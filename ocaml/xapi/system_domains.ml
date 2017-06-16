@@ -66,11 +66,6 @@ let vm_set_storage_driver_domain ~__context ~self ~value =
        Db.VM.add_to_other_config ~__context ~self ~key:storage_driver_domain_key ~value
     ) ()
 
-let record_pbd_storage_driver_domain ~__context ~pbd ~domain =
-  set_is_system_domain ~__context ~self:domain ~value:"true";
-  pbd_set_storage_driver_domain ~__context ~self:pbd ~value:(Ref.string_of domain);
-  vm_set_storage_driver_domain ~__context ~self:domain ~value:(Ref.string_of pbd)
-
 
 let pbd_of_vm ~__context ~vm =
   let other_config = Db.VM.get_other_config ~__context ~self:vm in
@@ -115,79 +110,6 @@ let storage_driver_domain_of_vbd ~__context ~vbd =
       dom0
   else dom0
 
-let storage_driver_domain_of_sr_type ~__context ~_type =
-  let dom0 = Helpers.get_domain_zero ~__context in
-  dom0
-
-let is_in_use ~__context ~self =
-  let other_config = Db.VM.get_other_config ~__context ~self in
-  List.mem_assoc storage_driver_domain_key other_config
-  && (
-    let pbd = Ref.of_string (List.assoc storage_driver_domain_key other_config) in
-    if Db.is_valid_ref __context pbd
-    then Db.PBD.get_currently_attached ~__context ~self:pbd
-    else false
-  )
-
-(* [wait_for ?timeout f] returns true if [f()] (called at 1Hz) returns true within
-   the [timeout] period and false otherwise *)
-let wait_for ?(timeout=120.) f =
-  let start = Unix.gettimeofday () in
-  let finished = ref false in
-  let success = ref false in
-  while not(!finished) do
-    let remaining = timeout -. (Unix.gettimeofday () -. start) in
-    if remaining < 0.
-    then finished := true
-    else
-      try
-        if f () then begin
-          success := true;
-          finished := true
-        end else Thread.delay 1.
-      with _ ->
-        Thread.delay 1.
-  done;
-  !success
-
-let pingable ip () =
-  try
-    let (_: string * string) = Forkhelpers.execute_command_get_output "/bin/ping" [ "-c"; "1"; "-w"; "1"; ip ] in
-    true
-  with _ -> false
-
-let queryable ~__context transport () =
-  let open Xmlrpc_client in
-  let rpc = XMLRPC_protocol.rpc ~srcstr:"xapi" ~dststr:"remote_smapiv2" ~transport ~http:(xmlrpc ~version:"1.0" "/") in
-  let listMethods = Rpc.call "system.listMethods" [] in
-  try
-    let _ = rpc listMethods in
-    info "XMLRPC service found at %s" (string_of_transport transport);
-    true
-  with e ->
-    debug "Temporary failure querying storage service on %s: %s" (string_of_transport transport) (Printexc.to_string e);
-    false
-
-let ip_of ~__context driver =
-  (* Find the VIF on the Host internal management network *)
-  let vifs = Db.VM.get_VIFs ~__context ~self:driver in
-  let hin = Helpers.get_host_internal_management_network ~__context in
-  let ip =
-    let vif =
-      try
-        List.find (fun vif -> Db.VIF.get_network ~__context ~self:vif = hin) vifs
-      with Not_found -> failwith (Printf.sprintf "driver domain %s has no VIF on host internal management network" (Ref.string_of driver)) in
-    match Xapi_udhcpd.get_ip ~__context vif with
-    | Some (a, b, c, d) -> Printf.sprintf "%d.%d.%d.%d" a b c d
-    | None -> failwith (Printf.sprintf "driver domain %s has no IP on the host internal management network" (Ref.string_of driver)) in
-
-  info "driver domain uuid:%s ip:%s" (Db.VM.get_uuid ~__context ~self:driver) ip;
-  if not(wait_for (pingable ip))
-  then failwith (Printf.sprintf "driver domain %s is not responding to IP ping" (Ref.string_of driver));
-  if not(wait_for (queryable ~__context (Xmlrpc_client.TCP(ip, 80))))
-  then failwith (Printf.sprintf "driver domain %s is not responding to XMLRPC query" (Ref.string_of driver));
-  ip
-
 type service = {
   uuid: string;
   ty: string;
@@ -209,12 +131,6 @@ let unregister_service service =
   Mutex.execute service_to_queue_m
     (fun () ->
        Hashtbl.remove service_to_queue service
-    )
-
-let get_service service =
-  Mutex.execute service_to_queue_m
-    (fun () ->
-       try Some(Hashtbl.find service_to_queue service) with Not_found -> None
     )
 
 let list_services () =

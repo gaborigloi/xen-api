@@ -90,12 +90,6 @@ let xenapi_of_xenops_power_state = function
   | Some Paused -> `Paused
   | None -> `Halted
 
-let xenops_of_xenapi_power_state = function
-  | `Running -> Running
-  | `Halted -> Halted
-  | `Suspended -> Suspended
-  | `Paused -> Paused
-
 let xenops_vdi_locator_of_strings sr_uuid vdi_location =
   Printf.sprintf "%s/%s" sr_uuid vdi_location
 
@@ -957,9 +951,6 @@ module Xapi_cache = struct
       debug "xapi_cache: updating cache for %s" id;
       Hashtbl.replace cache id t
     end else debug "xapi_cache: not updating cache for %s" id
-
-
-  let list_nolock () = Hashtbl.fold (fun id _ acc -> id :: acc) cache []
 end
 
 module Xenops_cache = struct
@@ -2763,15 +2754,6 @@ let s3resume ~__context ~self =
        Events_from_xenopsd.wait queue_name dbg id ()
     )
 
-let is_vm_running ~__context ~self =
-  let id = id_of_vm ~__context ~self in
-  let dbg = Context.string_of_task __context in
-  let queue_name = queue_of_vm ~__context ~self in
-  let module Client = (val make_client queue_name : XENOPS) in
-  debug "xenops: VM.stat %s" id;
-  (* If the metadata is still present, VM is "Running" *)
-  try Client.VM.stat dbg id |> ignore; true with _ -> false
-
 let md_of_vbd ~__context ~self =
   let vm = Db.VBD.get_VM ~__context ~self in
   MD.of_vbd ~__context ~vm:(Db.VM.get_record ~__context ~self:vm) ~vbd:(Db.VBD.get_record ~__context ~self)
@@ -2921,8 +2903,6 @@ let vif_plug ~__context ~self =
          raise Api_errors.(Server_error(internal_error, [
              Printf.sprintf "vif_plug: Unable to plug VIF %s" (Ref.string_of self)]))
     )
-
-let vm_set_vm_data ~__context ~self = ()
 
 let vif_set_locking_mode ~__context ~self =
   let vm = Db.VIF.get_VM ~__context ~self in

@@ -89,11 +89,6 @@ module Chunk = struct
     if n < len
     then failwith (Printf.sprintf "Short write: attempted to write %d bytes at %Ld, only wrote %d" len offset n)
 
-  (** Writes a single block of data to the output device *)
-  let write fd x =
-    ignore(Unix.LargeFile.lseek fd x.start Unix.SEEK_SET);
-    really_write fd x.start x.data 0 (String.length x.data)
-
   (** Reads a type t from a file descriptor *)
   let unmarshal fd =
     let buf = String.make 12 '\000' in

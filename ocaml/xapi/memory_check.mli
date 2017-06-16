@@ -53,15 +53,8 @@ type accounting_policy =
 val get_host_memory_summary : __context:Context.t -> host:API.ref_host ->
   host_memory_summary
 
-val vm_compute_required_memory : API.vM_t -> int64 -> int64 * int64
-
 val vm_compute_start_memory : __context:Context.t ->
   ?policy:accounting_policy -> API.vM_t -> int64 * int64
-
-val vm_compute_used_memory : __context:Context.t -> accounting_policy ->
-  [`VM] Ref.t -> int64
-
-val vm_compute_resume_memory : __context:Context.t -> [`VM] Ref.t -> int64
 
 val vm_compute_migrate_memory : __context:Context.t -> [`VM] Ref.t -> int64
 

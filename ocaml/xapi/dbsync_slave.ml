@@ -33,8 +33,6 @@ open D
 
 let ( ++ ) = Int64.add
 let ( -- ) = Int64.sub
-let ( ** ) = Int64.mul
-let ( // ) = Int64.div
 
 let get_my_ip_addr ~__context =
   match (Helpers.get_management_ip_addr ~__context) with

@@ -39,8 +39,6 @@ type configuration_change = {
   new_vms_to_protect: API.ref_VM list;                              (** new VMs to restart *)
 }
 
-val no_configuration_change : configuration_change
-
 (** Update the Pool.ha_* fields with the current planning status *)
 val update_pool_status : __context:Context.t -> ?live_set:API.ref_host list -> unit -> bool
 

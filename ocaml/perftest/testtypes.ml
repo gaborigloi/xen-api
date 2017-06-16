@@ -33,13 +33,3 @@ let sep = ':'
 
 let to_string (results:result list) =
   Printf.sprintf "%s%c%s" header sep (Marshal.to_string results [Marshal.No_sharing])
-
-let from_string s : result list option =
-  let open Stdext.Xstringext.String in
-  if startswith header s
-  then begin
-    match split ~limit:2 sep s with
-    | [_; r] -> Some (Marshal.from_string r 0)
-    | _ -> None
-  end else
-    None

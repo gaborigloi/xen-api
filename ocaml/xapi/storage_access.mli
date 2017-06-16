@@ -29,10 +29,6 @@ val start: unit -> unit
     	with (sr, vdi) *)
 val find_vdi: __context:Context.t -> Storage_interface.sr -> Storage_interface.vdi -> API.ref_VDI * API.vDI_t
 
-(** [find_content __context ?sr content_id] returns the XenAPI VDI ref associated
-    with [content_id] *)
-val find_content: __context:Context.t -> ?sr:Storage_interface.sr -> Storage_interface.content_id -> API.ref_VDI * API.vDI_t
-
 (** [bind __context pbd] causes the storage_access module to choose the most
         appropriate driver implementation for the given [pbd] *)
 val bind: __context:Context.t -> pbd:API.ref_PBD -> Storage_interface.query_result
@@ -41,18 +37,11 @@ val bind: __context:Context.t -> pbd:API.ref_PBD -> Storage_interface.query_resu
     between [pbd] and driver implementation *)
 val unbind: __context:Context.t -> pbd:API.ref_PBD -> unit
 
-(** [make_service uuid type] returns the service record for a storage driver *)
-val make_service: string -> string -> System_domains.service
-
 (** RPC function for calling the main storage multiplexor *)
 val rpc: Rpc.call -> Rpc.response
 
 (** [external_rpc queue_name uri] for calling a particular storage implementation *)
 val external_rpc: string -> (unit -> string) -> Rpc.call -> Rpc.response
-
-(** [datapath_of_vbd domid userdevice] returns the name of the datapath which corresponds
-    to device [userdevice] on domain [domid] *)
-val datapath_of_vbd: domid:int -> device:string -> Storage_interface.dp
 
 (** [presentative_datapath_of_vbd vm vdi] gives a presentative datapath for a potential
     vbd. If there is such datapath established (or can be established, given
@@ -77,15 +66,6 @@ val attach_and_activate: __context:Context.t -> vbd:API.ref_VBD -> domid:int -> 
     that any attached or activated VDI gets properly deactivated and detached. *)
 val deactivate_and_detach: __context:Context.t -> vbd:API.ref_VBD -> domid:int -> unit
 
-(** [is_attached __context vbd] returns true if the [vbd] has an attached
-    or activated datapath. *)
-val is_attached: __context:Context.t -> vbd:API.ref_VBD -> domid:int -> bool
-
-(** [on_vdi __context vbd domid f] calls [f rpc dp sr vdi] which is
-    useful for executing Storage_interface.Client.VDI functions, applying the
-    standard convention mapping VBDs onto DPs *)
-val on_vdi: __context:Context.t -> vbd:API.ref_VBD -> domid:int -> ((Rpc.call -> Rpc.response) -> Storage_interface.debug_info -> Storage_interface.dp -> Storage_interface.sr -> Storage_interface.vdi -> 'a) -> 'a
-
 (** [resynchronise_pbds __context pbds] sets the currently_attached state of
     each of [pbd] to match the state of the storage layer. *)
 val resynchronise_pbds: __context:Context.t -> pbds:API.ref_PBD list -> unit
@@ -93,14 +73,6 @@ val resynchronise_pbds: __context:Context.t -> pbds:API.ref_PBD list -> unit
 (** [refresh_local_vdi_activations __context] updates the VDI.sm_config fields to
     match the state stored within the storage layer. *)
 val refresh_local_vdi_activations: __context:Context.t -> unit
-
-(** [vbd_attach_order __context vbds] returns vbds in the order which xapi should
-    	attempt to attach them. *)
-val vbd_attach_order: __context:Context.t -> API.ref_VBD list -> API.ref_VBD list
-
-(** [vbd_detach_order __context vbds] returns vbds in the order which xapi should
-    	attempt to detach them. *)
-val vbd_detach_order: __context:Context.t -> API.ref_VBD list -> API.ref_VBD list
 
 (** [diagnostics __context] returns a printable snapshot of SM system state *)
 val diagnostics: __context:Context.t -> string
@@ -113,10 +85,6 @@ val create_sr: __context:Context.t -> sr:API.ref_SR -> name_label:string -> name
 
 (** [destroy_sr __context sr] attempts to cleanup and destroy a given SR *)
 val destroy_sr: __context:Context.t -> sr:API.ref_SR -> and_vdis:(API.ref_VDI list) -> unit
-
-val event_wait: Storage_interface.debug_info -> (Storage_interface.Dynamic.id -> bool) -> unit
-
-val task_ended : Storage_interface.debug_info -> Storage_interface.Task.id -> bool
 
 val success_task : Storage_interface.debug_info -> Storage_interface.Task.id -> Storage_interface.Task.t
 

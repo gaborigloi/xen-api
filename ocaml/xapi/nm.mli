@@ -24,10 +24,3 @@ val bring_pif_up : __context:Context.t -> ?management_interface:bool -> API.ref_
 
 (** Calls the [interface-reconfigure] script to take down a PIF on this host *)
 val bring_pif_down : __context:Context.t -> ?force:bool -> API.ref_PIF -> unit
-
-(** Execute a given function under the control of a mutex *)
-val with_local_lock : (unit -> 'a) -> 'a
-
-(** [is_dom0_interface pif_r] returns true if pif_r is a network interface
-    	which has a dom0 endpoint *)
-val is_dom0_interface : API.pIF_t -> bool

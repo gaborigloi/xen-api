@@ -155,26 +155,6 @@ let args_of_message (obj: obj) ( { msg_tag = tag } as msg) =
 (** True if a field is in the client side record (ie not an implementation field) *)
 let client_side_field f = not (f.DT.internal_only)
 
-let look_up_related_table_and_field obj other full_name =
-  (* Set(Ref t) is actually stored in the table t *)
-  let this_end = obj.DT.name, List.hd (full_name) in
-  (* XXX: relationships should store full names *)
-  let obj', fld' = DU.Relations.other_end_of DM.all_api this_end in
-  (obj', fld')
-
-(** For a field of type "other" called "full_name" which is a Set(Ref _),
-    return the set *)
-let read_set_ref obj other full_name =
-  (* Set(Ref t) is actually stored in the table t *)
-  let obj', fld' = look_up_related_table_and_field obj other full_name in
-  String.concat "\n" [
-    Printf.sprintf "if not(DB.is_valid_ref __t %s)" Client._self;
-    Printf.sprintf "then raise (Api_errors.Server_error(Api_errors.handle_invalid, [ %s ]))" Client._self;
-    Printf.sprintf "else List.map %s.%s (DB.read_set_ref __t " _string_to_dm (OU.alias_of_ty (DT.Ref other));
-    Printf.sprintf "    { table = \"%s\"; return=Db_names.ref; " (Escaping.escape_obj obj');
-    Printf.sprintf "      where_field = \"%s\"; where_value = %s })" fld' Client._self
-  ]
-
 let get_record (obj: obj) aux_fn_name =
   let body =
     [
@@ -183,19 +163,6 @@ let get_record (obj: obj) aux_fn_name =
       aux_fn_name^" ~__regular_fields ~__set_refs";
     ] in
   String.concat "\n" body
-
-(* Return a thunk which calls get_record on this class, for the event mechanism *)
-let snapshot obj_name self =
-  Printf.sprintf "(fun () -> API.%s.rpc_of_t (get_record ~__context ~self:%s))" (OU.ocaml_of_module_name obj_name) self
-
-(* Return a thunk which calls get_record on some other class, for the event mechanism *)
-let external_snapshot obj_name self =
-  Printf.sprintf "find_get_record \"%s\" ~__context ~self:%s" obj_name self
-
-let ocaml_of_tbl_fields xs =
-  let of_field (tbl, fld, fn) =
-    Printf.sprintf "\"%s\", %s, %s" tbl fld fn in
-  "[" ^ (String.concat "; " (List.map of_field xs)) ^ "]"
 
 (* This function is incomplete:
    let make_shallow_copy api (obj: obj) (src: string) (dst: string) (all_fields: field list) =
@@ -444,31 +411,3 @@ let db_action api : O.Module.t =
     ]
     ~elements:(List.map (fun x -> O.Module.Module x) modules) ()
 
-
-(** Generate a signature for the Server.Make functor. It should have one
-    field per member in the user-facing API (not the special full 'DB api')
-    which has no custom action. The signature will be smaller than the
-    db_actions signature but the db_actions module will be compatible with it *)
-let make_db_defaults_api = Dm_api.filter (fun _ -> true) (fun _ -> true)
-    (fun x -> not(Gen_empty_custom.operation_requires_side_effect x))
-
-let db_defaults api : O.Signature.t =
-  (* Since we intend to defunctorise, don't bother filtering the signature *)
-  let api = make_db_api api in
-
-  let operation (obj: obj) (x: message) =
-    let args = Gen_common.context_arg :: (args_of_message obj x) in
-    { O.Val.name = x.msg_name;
-      params = args @
-               [ O.Anon(None, match x.msg_result with Some (ty,_) -> OU.alias_of_ty ty
-                                                    | None -> "unit") ]
-    } in
-
-  let obj (obj: obj) =
-    { O.Signature.name = OU.ocaml_of_obj_name obj.DT.name;
-      elements = List.map (fun x -> O.Signature.Val (operation obj x)) obj.messages;
-    } in
-
-  { O.Signature.name = _db_defaults;
-    elements = List.map (fun x -> O.Signature.Module (obj x)) (Dm_api.objects_of_api api)
-  }

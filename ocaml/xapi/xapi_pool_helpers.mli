@@ -38,9 +38,6 @@ val call_fn_on_slaves_then_master :
   (rpc:(Rpc.call -> Rpc.response) ->
    session_id:API.ref_session -> host:[ `host ] Ref.t -> 'a) ->
   unit
-val get_master_slaves_list_with_fn :
-  __context:Context.t ->
-  ([ `host ] Ref.t -> [ `host ] Ref.t list -> 'a) -> 'a
 val get_master_slaves_list : __context:Context.t -> [ `host ] Ref.t list
 val get_slaves_list : __context:Context.t -> [ `host ] Ref.t list
 

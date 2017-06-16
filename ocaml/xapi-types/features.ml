@@ -114,10 +114,6 @@ let string_of_feature f =
   let str, o, _ = List.assoc f keys_of_features in
   str, o
 
-let feature_of_string str =
-  let f, (_, o, _) = List.find (fun (_, (k, _, _)) -> str = k) keys_of_features in
-  f, o
-
 let tag_of_feature f =
   let _, _, tag = List.assoc f keys_of_features in
   tag

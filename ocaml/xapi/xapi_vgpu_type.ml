@@ -19,9 +19,7 @@ open Stdext
 open Xstringext
 open Listext
 
-let ( *** ) = Int64.mul
 let ( /// ) = Int64.div
-let ( +++ ) = Int64.add
 let ( --- ) = Int64.sub
 let mib x = List.fold_left Int64.mul x [1024L; 1024L]
 

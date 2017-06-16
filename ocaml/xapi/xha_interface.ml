@@ -31,11 +31,6 @@ let xml_element_has_name name element =
   | Xml.Element (name_, _, _) -> name = name_
   | _                         -> false
 
-(** Returns a sub-list of the given element list, containing *)
-(** only those elements with the specified name.             *)
-let xml_elements_with_name elements name =
-  List.filter (xml_element_has_name name) elements
-
 (** Returns the first element with the specified name from *)
 (** the given element list.                                *)
 let first_xml_element_with_name elements name =

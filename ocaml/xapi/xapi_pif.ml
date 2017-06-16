@@ -70,14 +70,6 @@ let refresh_internal ~__context ~self =
     (fun () -> Net.Interface.get_capabilities dbg ~name:device)
     (String.concat "; ")
 
-let refresh ~__context ~host ~self =
-  let localhost = Helpers.get_localhost ~__context in
-  if not (host = localhost) then
-    raise Api_errors.(Server_error(internal_error, [
-        Printf.sprintf "refresh: Host mismatch, expected %s but got %s"
-          (Ref.string_of host) (Ref.string_of localhost)]));
-  refresh_internal ~__context ~self
-
 let refresh_all ~__context ~host =
   let localhost = Helpers.get_localhost ~__context in
   if not (host = localhost) then
@@ -96,14 +88,6 @@ let bridge_naming_convention (device: string) =
   if String.startswith "eth" device
   then ("xenbr" ^ (String.sub device 3 (String.length device - 3)))
   else ("br" ^ device)
-
-let read_bridges_from_inventory () =
-  try
-    String.split
-      (' ')
-      (Xapi_inventory.lookup Xapi_inventory._current_interfaces)
-  with _ ->
-    []
 
 (* Ensure the PIF is not a bond slave. *)
 let assert_not_bond_slave_of ~__context ~self =

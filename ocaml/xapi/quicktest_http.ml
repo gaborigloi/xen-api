@@ -114,8 +114,6 @@ module HTML_Escaping = struct (* {{{1 *)
   let non_resource_exp = "&lt;&gt;&apos;&quot;&amp;"
   let bad_resource_cmd = "GET /%foo<>'\"& HTTP/1.0\r\n\r\n"
   let bad_resource_exp = "&lt;&gt;&apos;&quot;&amp;"
-  let bad_command_cmd = "FOO<>'\"& /foo HTTP/1.0\r\n\r\n"
-  let bad_command_exp = "&lt;&gt;&apos;\\&quot;&amp;"
 
   let html_escaping expected cmd =
     let check_result b = String.has_substr b expected in

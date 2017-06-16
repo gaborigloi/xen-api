@@ -34,7 +34,6 @@ val bugreport_upload :
   host:'b -> url:string -> options:(string * string) list -> unit
 
 val signal_networking_change : __context:Context.t -> unit
-val signal_cdrom_event : __context:Context.t -> string -> unit
 val notify : __context:Context.t -> ty:string -> params:string -> unit
 
 (** {2 (Fill in title!)} *)
@@ -60,7 +59,6 @@ val dmesg_clear : __context:'a -> host:'b -> 'c
 val get_log : __context:'a -> host:'b -> 'c
 val send_debug_keys : __context:Context.t -> host:'b -> keys:string -> unit
 val list_methods : __context:'a -> 'b
-val is_slave : __context:'a -> host:'b -> bool
 
 (** Contact the host and return whether it is a slave or not.
     If the host is dead then one of the xmlrpcclient exceptions will be thrown *)
@@ -154,14 +152,6 @@ val tickle_heartbeat :
 val create_new_blob :
   __context:Context.t ->
   host:[ `host ] Ref.t -> name:string -> mime_type:string -> public:bool -> [ `blob ] Ref.t
-val serialize_host_enable_disable_extauth : Mutex.t
-val extauth_hook_script_name : string
-val call_extauth_plugin_nomutex :
-  __context:Context.t ->
-  host:[ `host ] Ref.t -> fn:string -> args:(string * string) list -> string
-val call_extauth_plugin :
-  __context:Context.t ->
-  host:[ `host ] Ref.t -> fn:string -> args:(string * string) list -> string
 val call_plugin :
   __context:Context.t ->
   host:[ `host ] Ref.t ->

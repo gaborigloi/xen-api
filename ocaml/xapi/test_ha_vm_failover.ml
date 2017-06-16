@@ -19,7 +19,6 @@ open Test_highlevel
 
 let ( *** ) = Int64.mul
 let kib x = 1024L *** x
-let mib x = x |> kib |> kib
 let gib x = x |> kib |> kib |> kib
 
 type vbd = {

@@ -25,7 +25,6 @@ open DT
 let debug_module_name   = "DebugVersion"
 let release_module_name = "ReleaseVersion"
 let signature_name = "CUSTOM_ACTIONS"
-let forwarding_signature_name = "CUSTOM_FORWARDING"
 
 let _task_id = "task_id"
 

@@ -318,16 +318,6 @@ let make_vgpu ~__context ?(ref=Ref.make ()) ?(uuid=make_uuid ()) ?(vM=Ref.null)
     ~other_config ~_type ~resident_on ~scheduled_to_be_resident_on;
   ref
 
-let make_vgpu_type ~__context ?(ref=Ref.make ()) ?(uuid=make_uuid ())
-    ?(vendor_name="") ?(model_name="") ?(framebuffer_size=0L) ?(max_heads=0L)
-    ?(max_resolution_x=0L) ?(max_resolution_y=0L) ?(size=0L)
-    ?(internal_config=[]) ?(implementation=`passthrough)
-    ?(identifier="") ?(experimental=false) () =
-  Db.VGPU_type.create ~__context ~ref ~uuid ~vendor_name ~model_name
-    ~framebuffer_size ~max_heads ~max_resolution_x ~max_resolution_y ~size
-    ~internal_config ~implementation ~identifier ~experimental;
-  ref
-
 let make_pvs_site ~__context ?(ref=Ref.make ()) ?(uuid=make_uuid ())
     ?(name_label="") ?(name_description="") ?(pVS_uuid="") ?(cache_storage=[]) () =
   Db.PVS_site.create ~__context ~ref ~uuid ~name_label ~name_description

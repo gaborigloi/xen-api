@@ -85,18 +85,3 @@ let put (key: string) (v: string) =
        assert_loaded ();
        if put_one key v;
        then flush ())
-
-let putv (all: (string * string) list) =
-  Mutex.execute m
-    (fun () ->
-       assert_loaded ();
-       let changes_made = List.map (fun (k, v) -> put_one k v) all in
-       if List.fold_left (||) false changes_made (* if any changes were made flush the lot *)
-       then flush ())
-
-let del (key : string) =
-  Mutex.execute m
-    (fun () ->
-       assert_loaded ();
-       Hashtbl.remove db key; (* Does nothing if the key isn't there *)
-       flush ())

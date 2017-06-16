@@ -145,21 +145,6 @@ let unhide_pci ~__context pci =
       _unhide_pci ~__context pci
     )
 
-(** Return the id of a PCI device *)
-let id_of (id, (domain, bus, dev, fn)) = id
-
-(** Return the domain of a PCI device *)
-let domain_of (id, (domain, bus, dev, fn)) = domain
-
-(** Return the bus of a PCI device *)
-let bus_of (id, (domain, bus, dev, fn)) = bus
-
-(** Return the device of a PCI device *)
-let dev_of (id, (domain, bus, dev, fn)) = dev
-
-(** Return the function of a PCI device *)
-let fn_of (id, (domain, bus, dev, fn)) = fn
-
 (** Find a free virtual function given a physical function (SR-IOV) *)
 let reserve_free_virtual_function ~__context vm pf =
   let rec search = function

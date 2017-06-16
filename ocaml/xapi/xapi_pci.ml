@@ -73,9 +73,6 @@ let get_local ~__context getter =
 let get_local_pcis_and_records ~__context =
   get_local ~__context Db.PCI.get_internal_records_where
 
-let get_local_pci_refs ~__context =
-  get_local ~__context Db.PCI.get_refs_where
-
 let update_pcis ~__context =
   let host = Helpers.get_localhost ~__context in
   let existing = List.filter_map

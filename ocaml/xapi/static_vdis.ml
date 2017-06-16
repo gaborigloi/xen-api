@@ -81,19 +81,6 @@ let permanent_vdi_deactivate_by_uuid ~__context ~uuid =
       uuid
       (ExnHelper.string_of_exn e)
 
-(** Detaches and removes records for VDIs which have been deleted *)
-let gc () =
-  Server_helpers.exec_with_new_task "GCing on-boot VDIs" (fun __context ->
-      List.iter
-        (fun vdi ->
-           let exists = try ignore(Db.VDI.get_by_uuid ~__context ~uuid:vdi.uuid); true with _ -> false in
-           if not(exists) then begin
-             warn "static-vdi %s cannot be found in database; removing on-boot configuration" vdi.uuid;
-             (* NB we can't call the SM functions since the record has gone *)
-             ignore(Helpers.call_script !Xapi_globs.static_vdis [ "del"; vdi.uuid ])
-           end
-        ) (list ()))
-
 (** If we just rebooted and failed to attach our static VDIs then this can be called to reattempt the attach:
     	this is necessary for HA to start. *)
 let reattempt_on_boot_attach () =

@@ -160,14 +160,6 @@ let read_localhost_info () =
     ) with _ -> true;
   }
 
-(** Returns the maximum of two values. *)
-let maximum x y = if x > y then x else y
-
-(** Returns the minimum of two values. *)
-let minimum x y = if x < y then x else y
-
-let (+++) = Int64.add
-
 (** Ensures that the database has all the necessary records for domain *)
 (** zero, and that the records are up-to-date. Includes the following: *)
 (**     1. The domain zero record.                                     *)

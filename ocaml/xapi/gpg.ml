@@ -20,9 +20,6 @@ open Pervasiveext
 module D = Debug.Make(struct let name="gpg" end)
 open D
 
-(* Set from config file: *)
-let filename = ref ""
-
 let gpg_binary_path = "/usr/bin/gpg"
 
 exception InvalidSignature
@@ -41,8 +38,6 @@ let parse_gpg_status status_data =
     | _ -> None
   else
     None
-
-let simple_checksum file = Digest.to_hex (Digest.file file)
 
 let common ty filename signature size f =
   let tmp_file, tmp_oc = Filename.open_temp_file ~mode:[Open_binary] "gpg" "" in
@@ -111,12 +106,6 @@ let common ty filename signature size f =
          debug "Error from gpg: %s" log;
          raise exn)
     (fun () -> List.iter Unix.close !fds_to_close)
-
-let with_signed_cleartext filename f =
-  common `signed_cleartext filename "" Int64.zero f
-
-let with_detached_signature filename signature size f =
-  common `detached_signature filename signature size f
 
 let with_verified_signature filename signature f =
   common `verified_signature filename signature Int64.zero f

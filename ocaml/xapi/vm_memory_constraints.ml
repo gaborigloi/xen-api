@@ -81,11 +81,6 @@ module type T = sig
 
 end
 
-let ( ++ ) = Int64.add
-let ( -- ) = Int64.sub
-let ( ** ) = Int64.mul
-let ( // ) = Int64.div
-
 module Vm_memory_constraints : T = struct
 
   type t =

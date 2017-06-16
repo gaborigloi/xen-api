@@ -42,6 +42,5 @@ val is_strict_subset : int64 array -> int64 array -> bool
 val vendor : string Map_check.field
 val cpu_count : int Map_check.field
 val socket_count : int Map_check.field
-val features : int64 array Map_check.field
 val features_pv : int64 array Map_check.field
 val features_hvm : int64 array Map_check.field

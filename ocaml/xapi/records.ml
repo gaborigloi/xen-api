@@ -20,17 +20,10 @@ open Db_cache (* eek! *)
 open Xstringext
 open Threadext
 
-let nullref = Ref.string_of (Ref.null)
 let nid = "<not in database>"
 let unknown_time = "<unknown time>"
 
-let checknull f r =
-  if (Ref.string_of r)=nullref then nid else
-    try f r with _ -> nid
 
-
-
-let getparam param params = try Some (List.assoc param params) with _ -> None
 
 let string_of_float f = Printf.sprintf "%.3f" f
 
@@ -1511,41 +1504,6 @@ let pbd_record rpc session_id pbd =
           ~get_map:(fun () -> (x ()).API.pBD_other_config) ()
       ]
   }
-
-let session_record rpc session_id session =
-  let _ref = ref session in
-  let empty_record = ToGet (fun () -> Client.Session.get_record rpc session_id !_ref) in
-  let record = ref empty_record in
-  let x () = lzy_get record in
-  { setref=(fun r -> _ref := r; record := empty_record );
-    setrefrec=(fun (a,b) -> _ref := a; record := Got b);
-    record=x;
-    getref=(fun () -> !_ref);
-    fields =
-      [
-        make_field ~name:"uuid" ~get:(fun () -> (x ()).API.session_uuid) ();
-      ]}
-
-let blob_record rpc session_id blob =
-  let _ref = ref blob in
-  let empty_record = ToGet (fun () -> Client.Blob.get_record rpc session_id !_ref) in
-  let record = ref empty_record in
-  let x () = lzy_get record in
-  { setref=(fun r -> _ref := r; record := empty_record );
-    setrefrec=(fun (a,b) -> _ref := a; record := Got b);
-    record=x;
-    getref=(fun () -> !_ref);
-    fields =
-      [
-        make_field ~name:"uuid" ~get:(fun () -> (x ()).API.blob_uuid) ();
-        make_field ~name:"name-label" ~get:(fun () -> (x ()).API.blob_name_label)
-          ~set:(fun x -> Client.Blob.set_name_label rpc session_id !_ref x) ();
-        make_field ~name:"name-description" ~get:(fun () -> (x ()).API.blob_name_description)
-          ~set:(fun x -> Client.Blob.set_name_description rpc session_id !_ref x) ();
-        make_field ~name:"last_updated" ~get:(fun () -> Date.to_string (x ()).API.blob_last_updated) ();
-        make_field ~name:"size" ~get:(fun () -> Int64.to_string (x ()).API.blob_size) ();
-        make_field ~name:"mime-type" ~get:(fun () -> (x ()).API.blob_mime_type) ();
-      ]}
 
 let secret_record rpc session_id secret =
   let _ref = ref secret in

@@ -17,13 +17,6 @@ open Test_common
 
 module LC = Xapi_vm_lifecycle
 
-let ops =
-  [ `suspend
-  ; `checkpoint
-  ; `pool_migrate
-  ; `migrate_send
-  ]
-
 let op_string = function
   | `suspend      -> "suspend"
   | `checkpoint   -> "checkpoint"

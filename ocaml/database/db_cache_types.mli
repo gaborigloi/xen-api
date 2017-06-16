@@ -40,9 +40,6 @@ module type MAP = sig
   (** [add now key value map] returns a new map with [key] associated with [value],
       with creation time [now] *)
 
-  val remove : Time.t -> string -> t -> t
-  (** [remove now key t] removes the binding of [key] from [t]. *)
-
   val fold : (string -> Stat.t -> value -> 'b -> 'b) -> t -> 'b -> 'b
   (** [fold f t initial] folds [f key stats value acc] over the items in [t] *)
 
@@ -53,10 +50,6 @@ module type MAP = sig
   val find : string -> t -> value
   (** [find key t] returns the value associated with [key] in [t] or raises
       [DBCache_NotFound] *)
-
-  val mem : string -> t -> bool
-  (** [mem key t] returns true if [value] is associated with [key] in [t] or false
-      otherwise *)
 
   val iter : (string -> value -> unit) -> t -> unit
   (** [iter f t] applies [f key value] to each binding in [t] *)
@@ -69,12 +62,6 @@ module type MAP = sig
       equal with the current value: in this case the modification time isn't bumped as
       an optimisation.
   *)
-
-  val touch : Time.t -> string -> value -> t -> t
-  (** [touch now key default t] returns a new map which is the same as [t] except:
-      if there is a value associated with [t] then its modification time is set to [now];
-      if there is no value associated with [t] then one is created with value [default].
-      On exit there will be a binding of [key] whose modification time is [now] *)
 end
 
 module Row : sig
@@ -104,11 +91,8 @@ module TableSet : MAP with type value = Table.t
 module Manifest :
 sig
   type t
-  val empty : t
   val make : int -> int -> Generation.t -> t
   val generation : t -> Generation.t
-  val touch : (Generation.t -> Generation.t) -> t -> t
-  val next : t -> t
   val schema : t -> int * int
   val update_schema : ((int * int) option -> (int * int) option) -> t -> t
 end
@@ -139,7 +123,6 @@ sig
   val reindex : t -> t
 
   val register_callback : string -> (update -> t -> unit) -> t -> t
-  val unregister_callback : string -> t -> t
   val notify : update -> t -> unit
 end
 

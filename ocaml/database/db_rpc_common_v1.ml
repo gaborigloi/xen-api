@@ -53,11 +53,6 @@ let marshall_stringlist sl =
 let unmarshall_stringlist xml =
   List.map XMLRPC.From.string (XMLRPC.From.array (fun x->x) xml)
 
-let marshall_stringstringlist ssl =
-  XMLRPC.To.array (List.map marshall_2strings ssl)
-let unmarshall_stringstringlist xml =
-  List.map unmarshall_2strings (XMLRPC.From.array (fun x->x) xml)
-
 let marshall_stringopt x =
   match x with
     None -> XMLRPC.To.array []

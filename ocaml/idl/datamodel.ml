@@ -1624,25 +1624,6 @@ let session_logout_subject_identifier = call
     ()
 
 (* ------------------------------------------------------------------------------------------------------------
-   Asynchronous Task Management
-   ------------------------------------------------------------------------------------------------------------ *)
-
-let cancel_result = Enum ("cancel_result",
-                          [ "OK", "OK";
-                            "Failed", "Not OK" ])
-
-(* ------------------------------------------------------------------------------------------------------------
-   RRD Consolidation function specification
-   ------------------------------------------------------------------------------------------------------------ *)
-
-let rrd_cf_type = Enum ("rrd_cf_type",
-                        [ "Average", "Average";
-                          "Min", "Minimum";
-                          "Max", "Maximum";
-                          "Last", "Last value" ])
-
-
-(* ------------------------------------------------------------------------------------------------------------
    VM Management
    ------------------------------------------------------------------------------------------------------------ *)
 
@@ -3596,7 +3577,6 @@ let names ?(writer_roles=None) ?(reader_roles=None) ?lifecycle in_oss_since qual
   ]
 
 let default_field_reader_roles = _R_ALL (* by default, all can read fields *)
-let default_field_writer_roles = _R_POOL_ADMIN (* by default, only root can write to them *)
 
 (** Create an object and map the object name into the messages *)
 let create_obj ?lifecycle ~in_oss_since ?in_product_since ?(internal_deprecated_since=None) ~gen_constructor_destructor ~gen_events ~persist ~name ~descr ~doccomments ~contents ~messages ~in_db
@@ -6124,16 +6104,6 @@ let storage_repository =
        ])
     ()
 
-(** XXX: just make this a field and be done with it. Cowardly refusing to change the schema for now. *)
-let sm_get_driver_filename = call
-    ~name:"get_driver_filename"
-    ~in_oss_since:None
-    ~in_product_since:rel_orlando
-    ~params:[Ref _sm, "self", "The SM to query" ]
-    ~result:(String, "The SM's driver_filename field")
-    ~doc:"Gets the SM's driver_filename field"
-    ()
-
 let storage_plugin =
   create_obj ~in_db:true ~in_product_since:rel_rio ~in_oss_since:None ~internal_deprecated_since:None ~persist:PersistEverything ~gen_constructor_destructor:false ~name:_sm ~descr:"A storage manager plugin"
     ~gen_events:true
@@ -8124,12 +8094,6 @@ let vmpp_archive_target_type = Enum ("vmpp_archive_target_type",
                                        "cifs", "CIFS target config";
                                        "nfs", "NFS target config";
                                      ])
-let vmpp_schedule_min = "min"
-let vmpp_schedule_hour = "hour"
-let vmpp_schedule_days = "days"
-let vmpp_archive_target_config_location = "location"
-let vmpp_archive_target_config_username = "username"
-let vmpp_archive_target_config_password = "password"
 let vmpp_set_backup_retention_value = call ~flags:[`Session]
     ~name:"set_backup_retention_value"
     ~lifecycle:vmpr_removed
@@ -9931,9 +9895,6 @@ let whitelist = [ (session,session_login);
 (* perform consistency checks on api at initialisation time *)
 let _ = Dm_api.check all_api (List.map (fun (obj,msg) -> obj.name, msg.msg_name) emergency_calls)
 
-(** List of classes to skip generating async handlers for *)
-let no_async_messages_for = [ _session; _event; (* _alert; *) _task; _data_source; _blob ]
-
 (** List of classes to generate 'get_all' messages for. Currently we don't
  ** allow a user to enumerate all the VBDs or VDIs directly: that must be
  ** through a VM or SR. *)
@@ -9990,8 +9951,6 @@ let expose_get_all_messages_for = [
 ]
 
 let no_task_id_for = [ _task; (* _alert; *) _event ]
-
-let current_operations_for = [ _vm; (* _vdi; _host; _sr *) ]
 
 (*** HTTP actions ***)
 

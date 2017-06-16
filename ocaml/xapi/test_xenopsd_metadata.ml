@@ -29,9 +29,6 @@ let string_of_vm_config conf =
     (Test_printers.(assoc_list string string) conf.oc)
     (Test_printers.(assoc_list string string) conf.platform)
 
-let string_of_vgpu_type {Xapi_vgpu_type.vendor_name; model_name} =
-  Printf.sprintf "vendor_name = %s, model_name = %s" vendor_name model_name
-
 let load_vm_config __context conf =
   let (self: API.ref_VM) = make_vm ~__context
       ~name_label:test_vm_name

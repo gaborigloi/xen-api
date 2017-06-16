@@ -34,15 +34,6 @@ let start_vm_lifecycle_queue () =
 (** Put "long running/streaming operations" into their own queue, so vm lifecycle ops can be parallelized with them *)
 let long_running_queue = Thread_queue.make ~name:"long_running_op" vm_lifecycle_queue_process_fn
 
-(** VM.{start,shutdown,copy,clone} etc are queued here *)
-let normal_vm_queue = Thread_queue.make ~name:"vm_lifecycle_op" vm_lifecycle_queue_process_fn
-
-(** Resynchronising dom0 VBDs and VIFs are handled here. *)
-let dom0_device_resync_queue = Thread_queue.make ~name:"dom0_device_resync" (fun f -> f ())
-
-(** Internal reboots and shutdowns are queued here *)
-let domU_internal_shutdown_queue = Thread_queue.make ~name:"domU_internal_shutdown" (fun f -> f())
-
 open Pervasiveext
 
 (** Join a given queue and execute the function 'f' when its our turn. Actually perform the computation in

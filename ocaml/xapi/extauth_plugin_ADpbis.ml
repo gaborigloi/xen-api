@@ -355,18 +355,6 @@ struct
     *)
     extract_sid_from_group_list subject_attrs
 
-  let pbis_get_sid_bygid gid =
-
-    let subject_attrs = pbis_common "/opt/pbis/bin/find-group-by-id" ["--level";"1";gid] in
-    (* find-group-by-id returns several lines. We only need the SID *)
-    if List.mem_assoc "SID" subject_attrs then List.assoc "SID" subject_attrs (* OK, return SID *)
-    else begin (*no SID value returned*)
-      (* this should not have happend, pbis didn't return an SID field!! *)
-      let msg = (Printf.sprintf "Pbis didn't return an SID field for gid %s" gid) in
-      debug "Error pbis_get_sid_bygid for gid %s: %s" gid msg;
-      raise (Auth_signature.Auth_service_error (Auth_signature.E_GENERIC,msg)) (* general Pbis error *)
-    end
-
   let pbis_get_sid_byname _subject_name cmd =
     let subject_name = get_full_subject_name _subject_name in (* append domain if necessary *)
 

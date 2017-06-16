@@ -19,18 +19,6 @@ open D
 module type V6clientS = module type of V6_client
 let v6client = ref (module V6_client : V6clientS)
 
-let fst4 (e,_,_,_) = e
-and lst4 (_,_,_,i) = i
-
-let find_min_edition allowed_editions =
-  List.fold_left
-    (fun a b ->
-       if (lst4 a) < (lst4 b)
-       then a else b)
-    ("","","",max_int)
-    allowed_editions
-  |> fst4
-
 (* xapi calls this function upon startup *)
 let initialise ~__context ~host =
   let module V6_client = (val !v6client : V6clientS) in

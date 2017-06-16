@@ -85,13 +85,6 @@ let remove h s =
   in
   movedown s
 
-let find h ev =
-  let rec iter n =
-    if n < 0 then -1
-    else if ev = h.data.(n).ev then n else iter (n-1)
-  in
-  iter (h.size-1)
-
 let find_p h f =
   let rec iter n =
     if n < 0 then -1
@@ -100,18 +93,6 @@ let find_p h f =
   iter (h.size-1)
 
 let pop_maximum h = let m = maximum h in remove h 0; m
-
-let iter f h =
-  let d = h.data in
-  for i = 0 to h.size - 1 do f d.(i) done
-
-let fold f h x0 =
-  let n = h.size in
-  let d = h.data in
-  let rec foldrec x i =
-    if i >= n then x else foldrec (f d.(i) x) (succ i)
-  in
-  foldrec x0 0
 
 (*
 let _ =

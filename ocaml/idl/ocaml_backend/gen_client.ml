@@ -34,9 +34,6 @@ let _key = "key"
 let _rpc = O.Named("rpc", "(Rpc.call -> Rpc.response)")
 let custom name ty = O.Named(name, OU.alias_of_ty ty)
 let session           = custom _session_id (DT.Ref Datamodel._session)
-let self (x: DT.obj)  = custom _self (DT.Ref x.DT.name)
-let value (ty: DT.ty) = custom _value ty
-let key (ty: DT.ty)   = custom _key ty
 
 let of_param p  = custom (OU.ocaml_of_record_field [p.param_name]) p.param_type
 let param_of_field fld = custom (OU.ocaml_of_record_field fld.full_name) fld.ty

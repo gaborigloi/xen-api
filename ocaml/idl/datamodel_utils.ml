@@ -128,11 +128,6 @@ let obj_has_get_by_name_label x =
   let all_fields = fields_of_obj x in
   List.filter (fun fld -> fld.full_name = [ "name"; "label" ]) all_fields <> []
 
-(* True if an object has tags (and therefore should have a get_tags message *)
-let obj_has_get_tags x =
-  let all_fields = fields_of_obj x in
-  List.filter (fun fld -> fld.full_name = [ "tags" ]) all_fields <> []
-
 (** XXX: unfortunately we don't mark which parameters of a message refer to the self;
     return the first parameter of the correct type *)
 let find_self_parameter (msg: message) =

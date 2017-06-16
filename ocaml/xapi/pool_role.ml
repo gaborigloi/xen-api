@@ -78,8 +78,6 @@ let is_slave () = match get_role () with
   | Slave _ -> true
   | _ -> false
 
-let is_broken () = get_role () = Broken
-
 exception This_host_is_a_master
 exception This_host_is_broken
 

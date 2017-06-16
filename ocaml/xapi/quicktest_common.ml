@@ -40,11 +40,8 @@ let escape = String.make 1 (char_of_int 0x1b)
 let set_attribute attrs = Control(Printf.sprintf "%s[%sm" escape (String.concat ";" (List.map string_of_int attrs)))
 let reset  = 0
 let bright = 1
-let dim    = 2
 let red    = 31
 let green  = 32
-let blue   = 34
-let yellow = 33
 let basic_string_of_status = function
   | Pending -> [ Data "           " ]
   | Success -> [ Data "[ Success ]" ]
@@ -203,10 +200,6 @@ let cli_cmd test args =
 let vm_install test session_id template name =
   let newvm_uuid = cli_cmd test [ "vm-install"; "template-uuid=" ^ template; "new-name-label=" ^ name ] in
   Client.VM.get_by_uuid !rpc session_id newvm_uuid
-
-let template_uninstall test session_id vm =
-  let uuid = Client.VM.get_uuid !rpc session_id vm in
-  ignore(cli_cmd test [ "template-uninstall"; "template-uuid=" ^ uuid; "--force" ])
 
 let vm_uninstall test session_id vm =
   let uuid = Client.VM.get_uuid !rpc session_id vm in

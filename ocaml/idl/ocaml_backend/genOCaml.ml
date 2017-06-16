@@ -20,7 +20,6 @@ open Gen_db_actions
 open Stdext.Listext
 
 let ( @- ) a b = a @ List.map (( ^ ) "  ") b
-let ( @-- ) a b = a @ List.map (( ^ ) "    ") b
 
 
 
@@ -30,10 +29,6 @@ let block head middle tail =
   (head @-
    List.flatten (List.between [""] middle)) @
   tail
-
-let gen_type ty accu = match ty with
-  | String | Int | Float | Bool -> accu
-  | ty -> ("type "^alias_of_ty ty^" = "^ocaml_of_ty ty) :: accu
 
 (** Generate code to marshal from the given datamodel type to XML-RPC. *)
 let ty_to_xmlrpc api ty =

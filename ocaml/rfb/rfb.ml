@@ -32,7 +32,6 @@ module UInt16 = struct
   let (||) = (lor)
   let (<<) = (lsl)
   let (>>) = (lsr)
-  let (&&) = (land)
 
   let marshal (x: t) : string =
     _marshal [ x >> 8; x ]
@@ -43,10 +42,6 @@ module UInt16 = struct
   let unmarshal (x: string) : t = match _unmarshal x with
     | [ msb; lsb ] -> (msb << 8) || lsb
     | _ -> raise Truncated
-
-  let prettyprint = string_of_int
-  let to_int x = x
-  let of_int x = x
 end
 
 module UInt32 = struct
@@ -55,40 +50,12 @@ module UInt32 = struct
   let (||) = Int32.logor
   let (<<) = Int32.shift_left
   let (>>) = Int32.shift_right
-  let (&&) = Int32.logand
 
   let marshal (x: t) : string =
     _marshal (List.map Int32.to_int [ x >> 24; x >> 16; x >> 8; x ])
-  let marshal_at (buf: string) (off: int) (x: t) =
-    let raw = marshal x in
-    blit raw 0 buf off 4;
-    off + 4
   let unmarshal (x: string) : t = match List.map Int32.of_int (_unmarshal x) with
     | [ a; b; c; d ] -> (a << 24) || (b << 16) || (c << 8) || d
     | _ -> raise Truncated
-
-  let prettyprint = string_of_int
-  let to_int32 x = x
-  let of_int32 x = x
-end
-
-module UInt64 = struct
-  type t = int64
-
-  let (||) = Int64.logor
-  let (<<) = Int64.shift_left
-  let (>>) = Int64.shift_right
-  let (&&) = Int64.logand
-
-  let marshal (x: t) : string =
-    _marshal (List.map Int64.to_int [ x >> 56; x >> 48; x >> 40; x >> 32; x >> 24; x >> 16; x >> 8; x ])
-  let unmarshal (x: string) : t = match List.map Int64.of_int (_unmarshal x) with
-    | [ a; b; c; d; e; f; g; h ] -> (a << 56 ) || (b << 48) || (c << 40) || (d << 32) || (e << 24) || (f << 16) || (g << 8) || h
-    | _ -> raise Truncated
-
-  let prettyprint = Int64.to_string
-  let to_int64 x = x
-  let of_int64 x = x
 end
 
 (** Really read, raising End_of_file if no more data *)
@@ -131,34 +98,21 @@ module Error = struct
   type t = string
 
   let marshal (x: t) = UInt32.marshal (Int32.of_int (String.length x)) ^ x
-  let unmarshal (s: Unix.file_descr) =
-    let len = UInt32.unmarshal (really_read s 4) in
-    really_read s (Int32.to_int len)
 end
 
 (* 3.3 *)
 module SecurityType = struct
   type t = Failed of string | NoSecurity | VNCAuth
 
-  exception Unmarshal_failure
-
   let marshal (x: t) = match x with
     | Failed x -> UInt32.marshal 0l ^ (Error.marshal x)
     | NoSecurity -> UInt32.marshal 1l
     | VNCAuth -> UInt32.marshal 2l
-
-  let unmarshal (s: Unix.file_descr) =
-    match UInt32.unmarshal (really_read s 4) with
-    | 0l -> Failed (Error.unmarshal s)
-    | 1l -> NoSecurity
-    | 2l -> VNCAuth
-    | _ -> raise Unmarshal_failure
 end
 
 module ClientInit = struct
   type t = bool (* shared-flag *)
 
-  let marshal (x: t) = if x then "x" else "\000"
   let unmarshal (s: Unix.file_descr) =
     match (really_read s 1).[0] with
     | '\000' -> false
@@ -228,10 +182,6 @@ end
 
 module SetPixelFormat = struct
   type t = PixelFormat.t
-  let marshal (x: t) =
-    let ty = "\000" in
-    let padding = "\000\000\000" in
-    ty ^ padding ^ (PixelFormat.marshal x)
 
   let unmarshal (s: Unix.file_descr) =
     ignore(really_read s 3);
@@ -281,63 +231,23 @@ module FramebufferUpdate = struct
     type t = { buffer: string }
     let sizeof (x: t) = String.length x.buffer
     let marshal (x: t) = x.buffer
-    let marshal_at (buf: string) (off: int) (x: t) =
-      let length = sizeof x in
-      blit x.buffer 0 buf off length;
-      off + length
   end
   module CopyRect = struct
     type t = { x: int; y: int }
-    let sizeof (x: t) = 2 + 2
     let marshal (x: t) =
       UInt16.marshal x.x ^ (UInt16.marshal x.y)
-    let marshal_at (buf: string) (off: int) (x: t) =
-      let off = UInt16.marshal_at buf off x.x in
-      UInt16.marshal_at buf off x.y
-    let prettyprint (x: t) =
-      Printf.sprintf "{ x = %d; y = %d }" x.x x.y
   end
   module Encoding = struct
     type t =
       | Raw of Raw.t
       | CopyRect of CopyRect.t
       | DesktopSize
-    let sizeof (x: t) = match x with
-      | Raw x -> 4 + Raw.sizeof x
-      | CopyRect x -> 4 + CopyRect.sizeof x
-      | DesktopSize -> 4
     let marshal (x: t) = match x with
       | Raw x -> UInt32.marshal 0l ^ (Raw.marshal x)
       | CopyRect x -> UInt32.marshal 1l ^ (CopyRect.marshal x)
       | DesktopSize -> UInt32.marshal (-223l)
-    let marshal_at (buf: string) (off: int) (x: t) = match x with
-      | Raw x ->
-        let off = UInt32.marshal_at buf off 0l in
-        Raw.marshal_at buf off x
-      | CopyRect x ->
-        let off = UInt32.marshal_at buf off 1l in
-        CopyRect.marshal_at buf off x
-      | DesktopSize ->
-        UInt32.marshal_at buf off (-223l)
-    let prettyprint = function
-      | Raw _ -> "Raw"
-      | CopyRect x -> "CopyRect " ^ (CopyRect.prettyprint x)
-      | DesktopSize -> "DesktopSize"
   end
   type t = { x: int; y: int; w: int; h: int; encoding: Encoding.t }
-  let sizeof (xs: t list) =
-    let one (one: t) = 2 + 2 + 2 + 2 + (Encoding.sizeof one.encoding) in
-    2 (* \000\000 *) + 2 (* length *) + (List.fold_left (+) 0 (List.map one xs))
-  let marshal_at (buf: string) (off: int) (xs: t list) =
-    let off = UInt16.marshal_at buf off 0 in
-    let off = UInt16.marshal_at buf off (List.length xs) in
-    let update (buf: string) (off: int) (one: t) =
-      let off = UInt16.marshal_at buf off one.x in
-      let off = UInt16.marshal_at buf off one.y in
-      let off = UInt16.marshal_at buf off one.w in
-      let off = UInt16.marshal_at buf off one.h in
-      Encoding.marshal_at buf off one.encoding in
-    List.fold_left (fun off x -> update buf off x) off xs
   let marshal (xs: t list) =
     let update (one: t) =
       let x = UInt16.marshal one.x and y = UInt16.marshal one.y in
@@ -345,18 +255,6 @@ module FramebufferUpdate = struct
       x ^ y ^ w ^ h ^ (Encoding.marshal one.encoding) in
     let length = UInt16.marshal (List.length xs) in
     "\000\000" ^ length ^ (String.concat "" (List.map update xs))
-end
-
-module SetColourMapEntries = struct
-  type t = { first_colour: int;
-             map: (int * int * int) list }
-  let marshal (x: t) =
-    let first_colour = UInt16.marshal x.first_colour in
-    let length = UInt16.marshal (List.length x.map) in
-    let colour (r, g, b) =
-      UInt16.marshal r ^ (UInt16.marshal g) ^ (UInt16.marshal b) in
-    "\001\000" ^ first_colour ^ length ^
-    (String.concat "" (List.map colour x.map))
 end
 
 module KeyEvent = struct
@@ -430,9 +328,6 @@ module Request = struct
     | x ->
       failwith (Printf.sprintf "Unknown message type: %d" x)
 end
-
-let white = (255, 255, 255)
-let black = (0, 0, 0)
 
 let handshake w h (s: Unix.file_descr) =
   let ver = { ProtocolVersion.major = 3; minor = 3 } in

@@ -22,21 +22,3 @@ let get_expiry_date ~__context ~host =
   if List.mem_assoc "expiry" license
   then Some (Stdext.Date.of_string (List.assoc "expiry" license))
   else None
-
-let check_expiry ~__context ~host =
-  let expired =
-    match get_expiry_date ~__context ~host with
-    | None -> false (* No expiry date means no expiry :) *)
-    | Some date -> Unix.time () > (Stdext.Date.to_float date)
-  in
-  if expired then raise (Api_errors.Server_error (Api_errors.license_expired, []))
-
-let vm ~__context vm =
-  (* Here we check that the license is still valid - this should be the only place where this happens *)
-  let host = Helpers.get_localhost ~__context in
-  check_expiry ~__context ~host
-
-(* XXX: why use a "with_" style function here? *)
-let with_vm_license_check ~__context v f =
-  vm ~__context v;
-  f()

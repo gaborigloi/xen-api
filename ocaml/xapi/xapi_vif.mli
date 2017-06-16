@@ -75,16 +75,6 @@ val move :
   network:[ `network ] Ref.t ->
   unit
 
-(** Throw error if the given operation is not in the list of allowed operations.
- *  Implemented by {!Xapi_vif_helpers.assert_operation_valid} *)
-val assert_operation_valid :
-  __context:Context.t -> self:[ `VIF ] Ref.t -> op:API.vif_operations -> unit
-
-(** Update the [PIF.allowed_operations] field.
- *  Implemented by {!Xapi_vif_helpers.update_allowed_operations} *)
-val update_allowed_operations :
-  __context:Context.t -> self:[ `VIF ] Ref.t -> unit
-
 (** Set the locking mode of this VIF.
  *  Update the firewall rules associated with this VIF, if it is plugged. *)
 val set_locking_mode :

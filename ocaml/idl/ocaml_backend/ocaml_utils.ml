@@ -41,10 +41,6 @@ let constructor_of string =
 let ocaml_of_record_name x =
   escape (String.uncapitalize x)
 
-(* generates: _VM *)
-let ocaml_of_record_name_rpc x =
-  escape x
-
 (* generates: _VM_foo *)
 let ocaml_of_record_field_rpc x =
   escape (String.concat "_" x)
@@ -53,9 +49,6 @@ let ocaml_of_record_field_rpc x =
 let ocaml_of_record_field = function
   | []     -> failwith "ocaml_of_record_field"
   | h :: t -> ocaml_of_record_field_rpc (String.uncapitalize h :: t)
-
-let ocaml_of_module_name x =
-  String.capitalize x
 
 (** Convert an IDL enum into a polymorhic variant. *)
 let ocaml_of_enum list =

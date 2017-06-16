@@ -132,17 +132,6 @@ val introduce :
 val update : __context:Context.t -> vdi:[ `VDI ] API.Ref.t -> unit
 val forget : __context:Context.t -> vdi:[ `VDI ] API.Ref.t -> unit
 
-(** driver_params is the storage-backend-specific parameters that are used to drive the
-    snapshot operation (e.g. vmhint for NetAPP)
-*)
-val snapshot_and_clone :
-  (dbg:string ->
-   sr:string ->
-   vdi_info:Storage_interface.vdi_info -> Storage_interface.vdi_info) ->
-  __context:Context.t ->
-  vdi:[ `VDI ] API.Ref.t ->
-  driver_params:(string * string) list -> [ `VDI ] API.Ref.t
-
 val snapshot :
   __context:Context.t ->
   vdi:[ `VDI ] API.Ref.t ->

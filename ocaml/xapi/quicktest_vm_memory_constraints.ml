@@ -16,10 +16,7 @@ open Ocamltest
 open Printf
 open Vm_memory_constraints.Vm_memory_constraints
 
-let ( ++ ) = Int64.add
-let ( -- ) = Int64.sub
 let ( ** ) = Int64.mul
-let ( // ) = Int64.div
 
 (** Creates a memory constraints record (with values in bytes) from the given
     memory constraints tuple (with values in MiB). *)

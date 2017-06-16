@@ -18,9 +18,6 @@ type operation = unit -> unit
 (** Instances of this type manage the background execution of the operation *)
 type manager
 
-(** Return a human-readable name for this background operation for debugging purposes *)
-val name_of_t: manager -> string
-
 (** Create a manager instance *)
 val make: string -> operation -> manager
 

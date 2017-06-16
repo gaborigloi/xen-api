@@ -2877,10 +2877,6 @@ let convert_switch switch =
     error "Rethrowing Not_found as ParseError: Unknown switch: %s" switch;
     Backtrace.reraise e (ParseError ("Unknown switch: "^switch))
 
-type token =
-  | Id of string
-  | Eq
-
 type commandline =
   { cmdname : string;
     argv0 : string;
@@ -2895,98 +2891,11 @@ let get_reqd_param cmd p =
     error "Rethrowing Not_found as ParamNotFound %s" p;
     Backtrace.reraise e (ParamNotFound p)
 
-let string_of_token t =
-  match t with
-  | Id s -> "Id("^s^")"
-  | Eq -> "Eq"
-
 let starts_with s prefix =
   let s_len = String.length s in
   let p_len = String.length prefix in
   (p_len<=s_len) &&
   (String.sub s 0 p_len)=prefix
-
-let tokens_of_argv argv_list =
-
-  let tokens : (token list ref) = ref [] in
-  let add_param x = tokens := x::!tokens in
-
-  let split_on_eq s =
-    let rec f cl sofar =
-      let flush_to_id() =
-        if sofar<>[] then
-          add_param (Id (String.implode (List.rev sofar))) in
-
-      match cl with
-        [] -> flush_to_id()
-      | ('='::cs) ->
-        (flush_to_id();
-         add_param Eq;
-         f cs [])
-      | (c::cs) ->
-        f cs (c::sofar)
-    in f (String.explode s) [] in
-
-  let rec f argv_list =
-    match argv_list with
-      [] -> ()
-    | (x::xs) ->
-      (* x may be a unary switch: *)
-      if (starts_with x "--") then
-        begin
-          add_param (Id (convert_switch x));
-          add_param Eq;
-          add_param (Id "true");
-          f xs
-        end
-        (* x may be a diadic switch *)
-      else if (starts_with x "-") then
-        begin
-          match xs with
-            [] ->
-            raise (ParseError ("Switch "^x^" requires parameter"))
-          | (z::zs) ->
-            begin
-              add_param (Id (convert_switch x));
-              add_param Eq;
-              add_param (Id z);
-              f zs
-            end
-        end
-      else
-        (* otherwise tokenize, splitting on equals: *)
-        begin
-          split_on_eq x;
-          f xs
-        end in
-  begin
-    f argv_list;
-    List.rev (!tokens)
-  end
-
-let parse tokens =
-  let rec read_rval ts sofar =
-    match ts with
-      [] -> ([],sofar)
-    | (Id s1)::(Id s2)::ts -> ((Id s2)::ts, sofar^s1)
-    | (Eq::ts) -> read_rval ts (sofar^"=")
-    | ((Id s1)::ts) -> read_rval ts (sofar^s1) in
-
-  let rec parse_params ts =
-    match ts with
-      [] -> []
-    | ((Id s)::Eq::ts) ->
-      let (rest_of_tokens,rval) = read_rval ts "" in
-      (s,rval)::(parse_params rest_of_tokens)
-    | x::_ -> raise (ParseError (string_of_token x)) (* !!! Do some diagnostic here *)
-  in
-
-  match tokens with
-  | ((Id cli_name)::(Id cname)::ts) ->
-    {cmdname = cname;
-     argv0 = cli_name;
-     params = (parse_params ts) }
-  | _ -> raise (ParseError ("No arguments given"))
 
 let rec parse_params_2 xs =
   match xs with
@@ -3124,43 +3033,6 @@ let rio_help printer minimal cmd =
           end
     end
 
-
-let geneva_help printer minimal cmd =
-  let docmd cmd =
-    try
-      let cmd_spec = Hashtbl.find cmdtable_geneva cmd in
-      let recs =
-        [("command name        ",cmd);
-         ("description     ",cmd_spec.help);
-         ("reqd params     ",String.concat ", " cmd_spec.reqd);
-         ("optional params ",String.concat ", " cmd_spec.optn)] in
-      printer (Cli_printer.PTable [recs])
-    with
-      Not_found as e ->
-      Debug.log_backtrace e (Backtrace.get e);
-      error "Responding with Unknown command %s" cmd;
-      printer (Cli_printer.PList ["Unknown command '"^cmd^"'"])
-  in
-  if List.mem_assoc "cmd" cmd.params then
-    docmd (List.assoc "cmd" cmd.params)
-  else
-    begin
-      let cmds = Hashtbl.fold (fun name cmd list -> (name::list)) cmdtable_geneva [] in
-      let sr_cmds = List.filter (fun n -> String.startswith "sr-" n) cmds in
-      let host_cmds = List.filter (fun n -> String.startswith "host-" n) cmds in
-      let vm_cmds = List.filter (fun n -> String.startswith "vm-" n) cmds in
-      let h =     "Usage: "^cmd.argv0^" <command> [-s server] [-pw passwd] [-p port] [-u user] [-pwf password file]\n" in
-      let h = h ^ "  [command specific arguments]\n\n" in
-      let h = h ^ "To get help on a specific command: "^cmd.argv0^" help cmd=<command>\n\n" in
-      let h = h ^ "Command list\n------------" in
-      printer (Cli_printer.PList [h]);
-      printer (Cli_printer.PList ["Storage Repository Commands:"]);
-      printer (Cli_printer.PList (make_list sr_cmds));
-      printer (Cli_printer.PList ["Host Commands:"]);
-      printer (Cli_printer.PList (make_list host_cmds));
-      printer (Cli_printer.PList ["VM Commands:"]);
-      printer (Cli_printer.PList (make_list vm_cmds))
-    end
 
 let cmd_help printer minimal cmd =
   rio_help printer minimal cmd

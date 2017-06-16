@@ -56,5 +56,3 @@ val create_internal :
 
 (** Destroy a VLAN. Removes the VLAN object as well as the VLAN master PIF. *)
 val destroy : __context:Context.t -> self:[ `VLAN ] Ref.t -> unit
-
-val vlan_mac : string

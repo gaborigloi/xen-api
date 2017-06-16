@@ -24,13 +24,6 @@ open D
 
 let fistpoint name = try Unix.access ("/tmp/fist_" ^ name) [ Unix.F_OK ]; true with _ -> false
 
-let fistpoint_read name =
-  try
-    Some (Unixext.string_of_file ("/tmp/fist_" ^ name))
-  with _ -> None
-
-let delete name = Unixext.unlink_safe ("/tmp/fist_" ^ name)
-
 (** Insert 2 * Xapi_globs.max_clock_skew into the heartbeat messages *)
 let insert_clock_skew             () = fistpoint "insert_clock_skew"
 
@@ -75,9 +68,6 @@ let deterministic_host_selection  () = fistpoint "deterministic_host_selection"
 (** Used to simulate a very slow planner to test Pool.ha_prevent_restarts_for *)
 let simulate_blocking_planner () = fistpoint "simulate_blocking_planner"
 
-(** Used to simulate an initial VBD.unplug failure *)
-let simulate_vbd_unplug_failure () = fistpoint "simulate_vbd_unplug_failure"
-
 (** {2 RRD fist points}
  *  NB: these are evaluated once at run time and not again - no dynamic changing here :-) *)
 
@@ -85,23 +75,6 @@ let simulate_vbd_unplug_failure () = fistpoint "simulate_vbd_unplug_failure"
 let reduce_blob_sync_interval = fistpoint "reduce_blob_sync_interval"
 
 let reduce_rrd_backup_interval = fistpoint "reduce_rrd_backup_interval"
-let reduce_rra_times = fistpoint "reduce_rra_times"
-
-(** Forces synchronous lifecycle path to defer to the event thread *)
-let disable_sync_lifecycle_path () = fistpoint "disable_sync_lifecycle_path"
-
-(** Forces synchronous lifecycle path by partially disabling the event thread *)
-let disable_event_lifecycle_path () = fistpoint "disable_event_lifecycle_path"
-
-(** If set to "reboot" "halt" "suspend" "crash" this will forcibly shutdown the domain during reboot/shutdown *)
-let simulate_internal_shutdown () =
-  let fist = "simulate_internal_shutdown" in
-  let x = fistpoint_read fist in
-  delete fist;
-  x
-
-(** Disables the artificial reboot delay, for faster testing. *)
-let disable_reboot_delay () = fistpoint "disable_reboot_delay"
 
 
 let force_remote_vdi_copy () = fistpoint "force_remote_vdi_copy"
@@ -112,11 +85,7 @@ let pause_storage_migrate2 () = fistpoint "pause_storage_migrate2"
 
 let storage_motion_keep_vdi () = fistpoint "storage_motion_keep_vdi"
 
-let allow_test_patches () = fistpoint "allow_test_patches"
-
 let delay_xenopsd_event_threads () = fistpoint "delay_xenopsd_event_threads"
-
-let allowed_unsigned_patches () = fistpoint_read "allowed_unsigned_patches"
 
 (** Allows migration and suspension of VMs with NVIDIA vGPUs. *)
 let allow_nvidia_vgpu_migration () = fistpoint "allow_nvidia_vgpu_migration"

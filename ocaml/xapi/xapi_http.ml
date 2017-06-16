@@ -54,27 +54,6 @@ let get_session_id (req: Request.t) =
     Ref.null
 
 
-let append_to_master_audit_log __context action line =
-  (* http actions are not automatically written to the master's audit log *)
-  (* it is necessary to do that manually from the slaves *)
-  if Stdext.Xstringext.String.startswith
-      Datamodel.rbac_http_permission_prefix
-      action
-  then
-    if Pool_role.is_slave ()
-    then begin
-      Helpers.call_api_functions ~__context (fun rpc session_id ->
-          Client.Pool.audit_log_append ~rpc ~session_id  ~line
-        )
-    end
-
-(* static call-back from rbac-audit into append_to_master_audit_log function *)
-(* used to avoid cycle dependency between xapi_http and rbac_audit *)
-let init_fn_append_to_master_audit_log =
-  if !Rbac_audit.fn_append_to_master_audit_log = None
-  then Rbac_audit.fn_append_to_master_audit_log := Some(append_to_master_audit_log)
-
-
 let rbac_audit_params_of (req: Request.t) =
   let all = req.Request.cookie @ req.Request.query in
   List.fold_right (fun (n,v) (acc_n,acc_v) ->

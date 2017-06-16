@@ -113,25 +113,11 @@ let assert_operation_valid ~__context ~self ~(op:API.vif_operations) =
   let table = valid_operations ~__context all self in
   throw_error table op
 
-let assert_attachable ~__context ~self = 
-  let all = Db.VIF.get_record_internal ~__context ~self in
-  let table = valid_operations ~__context all self in
-  throw_error table `attach
-
 let update_allowed_operations ~__context ~self : unit =
   let all = Db.VIF.get_record_internal ~__context ~self in
   let valid = valid_operations ~__context all self in
   let keys = Hashtbl.fold (fun k v acc -> if v = None then k :: acc else acc) valid [] in
   Db.VIF.set_allowed_operations ~__context ~self ~value:keys
-
-(** Someone is cancelling a task so remove it from the current_operations *)
-let cancel_task ~__context ~self ~task_id = 
-  let all = List.map fst (Db.VIF.get_current_operations ~__context ~self) in
-  if List.mem task_id all then
-    begin
-      Db.VIF.remove_from_current_operations ~__context ~self ~key:task_id;
-      update_allowed_operations ~__context ~self
-    end
 
 let cancel_tasks ~__context ~self ~all_tasks_in_db ~task_ids =
   let ops = Db.VIF.get_current_operations ~__context ~self in

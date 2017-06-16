@@ -26,11 +26,6 @@ type t =
   | Windows of int * int * int * int
   | Unknown
 
-let string_of = function
-  | Linux(major, minor, micro, build) -> Printf.sprintf "Linux %d.%d.%d-%d" major minor micro build
-  | Windows(major, minor, micro, build) -> Printf.sprintf "Windows %d.%d.%d-%d" major minor micro build
-  | Unknown -> "Unknown"
-
 let has_pv_drivers x = x <> Unknown
 
 let get_drivers_version os_version drivers_version =

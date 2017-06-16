@@ -16,5 +16,4 @@ type indexrec = {
   uuid: string;
   _ref: string
 }
-val string_of : indexrec -> string
 val lookup : string (* ref or uuid *) -> indexrec option

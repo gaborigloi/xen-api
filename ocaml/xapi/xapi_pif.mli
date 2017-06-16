@@ -43,9 +43,6 @@
 
 (** {2 API functions} *)
 
-(** Refresh the metadata of an existing PIF on the current host. *)
-val refresh : __context:Context.t -> host:[`host] Ref.t -> self:[`PIF] Ref.t -> unit
-
 (** Refresh the metadata of all existing PIFs on the current host. *)
 val refresh_all : __context:Context.t -> host:[`host] Ref.t -> unit
 
@@ -153,14 +150,6 @@ val plug : __context:Context.t -> self:[ `PIF ] Ref.t -> unit
 
 (** {2 Miscellaneous Helper Functions} *)
 
-(** Constructs a bridge name from a device (network interface) name by replacing
- *  [eth] by [xenbr], or prepending [br] if the device name does not start with [eth].
-*)
-val bridge_naming_convention : string -> string
-
-(** Return the list of bridges in the CURRENT_INTERFACES field in the inventory file. *)
-val read_bridges_from_inventory : unit -> string list
-
 (** Ensure the PIF can be used for management. *)
 val assert_usable_for_management :
   __context:Context.t ->
@@ -168,23 +157,11 @@ val assert_usable_for_management :
   self:[ `PIF ] API.Ref.t ->
   unit
 
-(** If a network for the given bridge already exists, then return a reference to this network,
- *  otherwise create a new network and return its reference.
-*)
-val find_or_create_network :
-  string -> string -> __context:Context.t -> [ `network ] Ref.t
-
 (** Convenient lookup tables for scanning etc *)
 type tables = {
   device_to_mac_table : (string * string) list;
   pif_to_device_table : (API.ref_PIF * string) list;
 }
-
-(** Construct and return lookup {!tables} with information about the network interfaces *)
-val make_tables : __context:Context.t -> host:[ `host ] Ref.t -> tables
-
-(** Return true if this PIF is my management interface, according to xensource-inventory *)
-val is_my_management_pif : __context:Context.t -> self:[ `PIF ] Ref.t -> bool
 
 (** Make a new metrics objects and return reference to it *)
 val make_pif_metrics : __context:Context.t -> [ `PIF_metrics ] Ref.t
@@ -217,47 +194,11 @@ val pool_introduce :
   properties:(string * string) list ->
   [ `PIF ] Ref.t
 
-(** Create a new PIF record with the given details. Also create a network for the
- *  new PIF, or reuses an existing one if the name matches the convention prescribed
- *  by the function {!bridge_naming_convention}. Also check whether the new PIF
- *  is to be the management PIF (according to {!is_my_management_pif}) and set the
- *  flags accordingly. *)
-val introduce_internal :
-  ?network:[ `network ] Ref.t ->
-  ?physical:bool ->
-  t:tables ->
-  __context:Context.t ->
-  host:[ `host ] Ref.t ->
-  mAC:Helpers.StringSet.elt ->
-  mTU:int64 ->
-  device:Helpers.StringSet.elt ->
-  vLAN:int64 ->
-  vLAN_master_of:[ `VLAN ] Ref.t ->
-  ?metrics:[ `PIF_metrics ] Ref.t ->
-  managed:bool ->
-  ?disallow_unplug:bool ->
-  unit ->
-  [ `PIF ] Ref.t
-
-(** Brings down the network interface and removes the PIF object. *)
-val forget_internal :
-  t:tables -> __context:Context.t -> self:API.ref_PIF -> unit
-
 (** Look over all this host's PIFs and reset the management flag.
  *  The management interface is ultimately defined by the inventory file,
  *  which holds the bridge of the management interface in the MANAGEMENT_INTERFACE field. *)
 val update_management_flags :
   __context:Context.t -> host:[ `host ] Ref.t -> unit
-
-(** Returns the set of PIF references + records which we want to be plugged in by the end of the
-    start of day code. These are the PIFs on the localhost that are not bond slaves.
-    For PIFs that have [disallow_unplug] set to true, and the management interface, will
-    actually be brought up ahead of time by the init scripts, so we don't have to plug them in.
-    These are written to the xensource-inventory file when HA is enabled so that HA can bring up
-    interfaces required by storage NICs etc. (these interface are not filtered out at the moment).
-*)
-val calculate_pifs_required_at_start_of_day :
-  __context:Context.t -> ('b Ref.t * API.pIF_t) list
 
 (** Attempt to bring up (plug) the required PIFs when the host starts up.
  *  Uses {!calculate_pifs_required_at_start_of_day}. *)
@@ -268,13 +209,6 @@ val start_of_day_best_effort_bring_up : unit -> unit
 
 (** Ensure the PIF is not a bond slave or master. *)
 val assert_not_in_bond : __context:Context.t -> self:[ `PIF ] Ref.t -> unit
-
-(** Ensure the PIF is not a VLAN slave or master. *)
-val assert_no_vlans : __context:Context.t -> self:[ `PIF ] Ref.t -> unit
-
-(** Ensure the PIF is not the management interface. *)
-val assert_not_management_pif :
-  __context:Context.t -> self:[ `PIF ] Ref.t -> unit
 
 (** Ensure the PIF is not the management interface if the host is a pool slave. *)
 val assert_not_slave_management_pif :

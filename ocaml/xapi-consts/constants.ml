@@ -38,7 +38,6 @@ let vncsnapshot_uri = "/vncsnapshot"                  (* ocaml/xapi/xapi_vncsnap
 let system_status_uri = "/system-status"              (* ocaml/xapi/system_status.ml *)
 let remote_db_access_uri = "/remote_db_access"        (* ocaml/xapi/xapi.ml *)
 let remote_db_access_uri_v2 = "/remote_db_access_v2"  (* ocaml/xapi/xapi.ml *)
-let remote_stats_uri = "/remote_stats"                (* ocaml/xapi/xapi.ml *)
 let json_uri = "/json"                                (* ocaml/xapi/xapi.ml *)
 let jsonrpc_uri = "/jsonrpc"                          (* ocaml/xapi/xapi.ml *)
 let cli_uri = "/cli"                                  (* ocaml/xapi/xapi_cli.ml *)
@@ -65,15 +64,6 @@ let get_pool_update_download_uri = "/update/"         (* ocaml/xapi/xapi_pool_up
 
 let use_compression = "use_compression"
 
-(* If VM.HVM_boot_policy is set to this then we boot using qemu-dm *)
-let hvm_boot_policy_bios_order = "BIOS order"
-(* Key we expect to find in VM.HVM_boot_params if VM.HVM_boot_policy = BIOS_order.
-   Value is the boot string we send to qemu-dm (eg cd, dc, dcn, etc) *)
-let hvm_boot_params_order = "order"
-
-(* Key we put in VM.other_config when we upgrade a VM from Zurich/Geneva to Rio *)
-let vm_upgrade_time = "upgraded at"
-
 (* Keys in the local config database *)
 let ha_armed = "ha.armed"
 let ha_disable_failover_decisions = "ha.disable_failover_decisions"
@@ -81,7 +71,6 @@ let ha_restart = "restart"
 let ha_restart_best_effort = "best-effort"
 let ha_valid_restart_priorities = [ ha_restart; ha_restart_best_effort; "" ]
 let ha_base_t = "ha_base_t"
-let ballooning_enabled = "ballooning.enabled"
 let redo_log_enabled = "redo_log.enabled"
 let ha_cluster_stack = "ha_cluster_stack"
 
@@ -110,9 +99,6 @@ let rrd_update_interval = "rrd_update_interval"
 (* Standard name of a XenAPI plugin which can power on remote hosts *)
 let power_on_plugin = "power-on-host"
 let power_on_fn = "main"
-
-(* Key used in local storage to list local PBDs with should have currently_attached = true (on this boot) *)
-let local_currently_attached_pbds = "currently_attached_pbds"
 
 (* The unique static rbac ref for the pool-admin role in the roles table *)
 let rbac_pool_admin_uuid = "0165f154-ba3e-034e-6b27-5d271af109ba"

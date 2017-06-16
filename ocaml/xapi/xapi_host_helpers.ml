@@ -149,14 +149,6 @@ let cancel_tasks ~__context ~self ~all_tasks_in_db ~task_ids =
   let set = (fun value -> Db.Host.set_current_operations ~__context ~self ~value) in
   Helpers.cancel_tasks ~__context ~ops ~all_tasks_in_db ~task_ids ~set
 
-let disable  ~__context ~host = ()
-
-let enable  ~__context ~host = ()
-
-let shutdown  ~__context ~host = ()
-
-let reboot  ~__context ~host = ()
-
 (* When the Host.shutdown and Host.reboot calls return to the master, the slave is 
    shutting down asycnronously. We immediately set the Host_metrics.live to false 
    and add the host to the global list of known-dying hosts. *)

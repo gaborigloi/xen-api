@@ -27,10 +27,6 @@ let string_of_host_license_state state =
     (Test_printers.(assoc_list string string) state.license_params)
     state.edition
 
-let string_of_date_opt = function
-  | None -> "None"
-  | Some date -> Printf.sprintf "Some %s" (Date.to_string date)
-
 let f2d = Date.of_float
 let f2d2s = Date.to_string ++ Date.of_float
 

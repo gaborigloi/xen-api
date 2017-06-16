@@ -45,8 +45,6 @@ let find kvpairs where x =
   then raise (Failure (Printf.sprintf "Failed to find key '%s' in %s" x where))
   else List.assoc x kvpairs
 
-let string_of_obj x = x.cls ^ "  " ^ x.id
-
 let _class = "class"
 let _id = "id"
 let _snapshot = "snapshot"
@@ -147,7 +145,6 @@ open Client
 (** HTTP header type used for streaming binary data *)
 let content_type = Http.Hdr.content_type ^ ": application/octet-stream"
 
-let xmlrpc_of_checksum_table table = API.Legacy.To.string_to_string_map table
 let checksum_table_of_xmlrpc xml = API.Legacy.From.string_to_string_map "" xml
 
 let compare_checksums a b =

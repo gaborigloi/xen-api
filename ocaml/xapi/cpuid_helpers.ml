@@ -78,7 +78,6 @@ let is_strict_subset left right =
 
 (** Field definitions for checked string map access *)
 let features_t   = Map_check.pickler features_of_string string_of_features
-let features     = Map_check.field "features" features_t
 let features_pv  = Map_check.field "features_pv" features_t
 let features_hvm = Map_check.field "features_hvm" features_t
 let cpu_count    = Map_check.(field "cpu_count" int)

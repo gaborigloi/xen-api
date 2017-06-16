@@ -193,7 +193,6 @@ type guest_metrics_t = {
   can_use_hotplug_vif: API.tristate_type;
 }
 let cache : (int, guest_metrics_t) Hashtbl.t = Hashtbl.create 20
-let memory_targets : (int, int64) Hashtbl.t = Hashtbl.create 20
 let dead_domains : IntSet.t ref = ref IntSet.empty
 let mutex = Mutex.create ()
 

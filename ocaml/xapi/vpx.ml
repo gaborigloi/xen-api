@@ -15,10 +15,6 @@ type jobInstance = {
   uncompressedBytesWritten:int64; stateDesc:string;
   percentComplete:int64; state:jobState; clientIpEndPoint:string; jobInfo:jobInfo
 }
-type vmInstance = {
-  uUID:string; name:string; powerState:int32; oSType :string;
-  committedStorage:int64; uncommittedStorage:int64; template:bool
-}
 
 let rpc_type_error x structname expected =
   let msg = Printf.sprintf "'%s_of_rpc:got '%s' when '%s' was expected"
@@ -46,18 +42,6 @@ let get_int64_dict dict key structname =
   match value with
   | Rpc.Int v -> v
   | x -> rpc_type_error x structname "Int(int64)"
-
-let get_bool_dict dict key structname =
-  let value = get_dict dict key structname in
-  match value with
-  | Rpc.Bool v -> v
-  | x -> rpc_type_error x structname "Bool(bool)"
-
-let string_of_serverType = function
-  | XenServer -> "XenServer"
-  | ESXServer -> "ESXServer"
-  | VirtualCenter -> "VirtualCenter"
-  | HyperVServer -> "HyperVServer"
 
 let serverType_of_string = function
   | "default"
@@ -104,26 +88,11 @@ let jobState_of_rpc x =
      | _ -> rpc_type_error x "JobState" "Int(int64)")
   | e -> rpc_type_error e "JobState" "Int(int64)"
 
-let rpc_of_jobState = function
-  | Created -> Rpc.rpc_of_int 0
-  | Queued -> Rpc.rpc_of_int 1
-  | Running -> Rpc.rpc_of_int 2
-  | Completed -> Rpc.rpc_of_int 3
-  | Aborted -> Rpc.rpc_of_int 4
-  | UserAborted -> Rpc.rpc_of_int 5
-
 let rpc_of_serviceCred v =
   Rpc.Dict [
     ("Username", (Rpc.String v.username));
     ("Password", (Rpc.String v.password))
   ]
-
-let serviceCred_of_rpc r =
-  let sn = "ServiceCred" in
-  {
-    username = (get_string_dict r "Username" sn);
-    password = (get_string_dict r "Password" sn)
-  }
 
 let rpc_of_serverInfo v =
   Rpc.Dict [
@@ -142,7 +111,6 @@ let serverInfo_of_rpc r =
       password = get_string_dict r "Password" sn;
     }
   }
-let rpc_of_dateTime v = Rpc.DateTime (Stdext.Date.to_string v)
 
 let dateTime_of_rpc r =
   match r with
@@ -170,26 +138,6 @@ let jobInfo_of_rpc r =
     importInfo = importInfo_of_rpc (get_dict r "ImportInfo" sn)
   }
 
-let rpc_of_jobInstance v =
-  Rpc.Dict [
-    "Id", (Rpc.String v.id);
-    "JobName", (Rpc.String v.jobName);
-    "JobDesc", (Rpc.String v.jobDesc);
-    "XenServerName", (Rpc.String v.xenServerName);
-    "SRName", (Rpc.String v.sRName);
-    "CreatedTime", (rpc_of_dateTime v.createdTime);
-    "StartTime", (rpc_of_dateTime v.startTime);
-    "CompletedTime", (rpc_of_dateTime v.completedTime);
-    "ErrorString", (Rpc.String v.errorString);
-    "CompressedBytesRead", (Rpc.Int v.compressedBytesRead);
-    "UncompressedBytesWritten", (Rpc.Int v.uncompressedBytesWritten);
-    "StateDesc", (Rpc.String v.stateDesc);
-    "PercentComplete", (Rpc.Int v.percentComplete);
-    "State", (rpc_of_jobState v.state);
-    "ClientIpEndPoint", (Rpc.String v.clientIpEndPoint);
-    "JobInfo", (rpc_of_jobInfo v.jobInfo)
-  ]
-
 let jobInstance_of_rpc r =
   let sn = "JobInstance" in
   {
@@ -210,42 +158,6 @@ let jobInstance_of_rpc r =
     clientIpEndPoint = get_string_dict r "ClientIpEndPoint" sn;
     jobInfo = jobInfo_of_rpc (get_dict r "JobInfo" sn)
   }
-
-let rpc_of_vmInstance v =
-  Rpc.Dict [
-    "UUID", (Rpc.String v.uUID);
-    "Name", (Rpc.String v.name);
-    "PowerState", (Rpc.Int (Int64.of_int32 v.powerState));
-    "OSType", (Rpc.String v.oSType);
-    "CommittedStorage", (Rpc.Int v.committedStorage);
-    "UncommittedStorage", (Rpc.Int v.uncommittedStorage);
-    "Template", (Rpc.Bool v.template)
-  ]
-
-let vmInstance_of_rpc r =
-  let sn = "VmInstance" in
-  {
-    uUID = get_string_dict r "UUID" sn;
-    name = get_string_dict r "Name" sn;
-    powerState = Int64.to_int32 (get_int64_dict r "PowerState" sn);
-    oSType = get_string_dict r "OSType" sn;
-    committedStorage = get_int64_dict r "CommittedStorage" sn;
-    uncommittedStorage = get_int64_dict r "UncommittedStorage" sn;
-    template = get_bool_dict r "Template" sn
-  }
-
-let array_of_rpc lr typename =
-  match lr with
-  | Rpc.Enum l -> l
-  | x -> rpc_type_error x ("[" ^ typename ^ "]") "Enum(t)"
-
-let array_of_vmInstances_of_rpc lr =
-  let l = array_of_rpc lr "VmInstance" in
-  List.map (fun r -> vmInstance_of_rpc r) l
-
-let array_of_jobInstances_of_rpc lr =
-  let l = array_of_rpc lr "JobInstance" in
-  List.map (fun r -> jobInstance_of_rpc r) l
 
 let vpxrpc ip call =
   let open Xmlrpc_client in

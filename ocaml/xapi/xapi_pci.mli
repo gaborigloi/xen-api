@@ -32,9 +32,6 @@ val string_of_pci : __context:Context.t -> self:API.ref_PCI -> string
 (** A list of (ref, record) pairs for the PCI DB objects of the local host *)
 val get_local_pcis_and_records : __context:Context.t -> (API.ref_PCI * Db_actions.pCI_t) list
 
-(** A list of refs for the PCI DB objects of the local host *)
-val get_local_pci_refs : __context:Context.t -> API.ref_PCI list
-
 (** Synchronise the PCI objects in the database with the actual devices in the local host. *)
 val update_pcis : __context:Context.t -> unit
 

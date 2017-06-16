@@ -878,10 +878,6 @@ module SMAPIv1 = struct
   end
 end
 
-module type SERVER = sig
-  val process : Smint.request -> Rpc.call -> Rpc.response
-end
-
 (* Start a set of servers for all SMAPIv1 plugins *)
 let start_smapiv1_servers () =
   let drivers = Sm.supported_drivers () in
@@ -1234,21 +1230,6 @@ let of_vbd ~__context ~vbd ~domid =
   let dp = datapath_of_vbd ~domid ~device in
   rpc, (Ref.string_of dbg), dp, (Db.SR.get_uuid ~__context ~self:sr), location
 
-(** [is_attached __context vbd] returns true if the [vbd] has an attached
-    or activated datapath. *)
-let is_attached ~__context ~vbd ~domid  =
-  transform_storage_exn
-    (fun () ->
-       let rpc, dbg, dp, sr, vdi = of_vbd ~__context ~vbd ~domid in
-       let open Vdi_automaton in
-       let module C = Storage_interface.Client(struct let rpc = rpc end) in
-       try
-         let x = C.DP.stat_vdi ~dbg ~sr ~vdi () in
-         x.superstate <> Detached
-       with
-       | e -> error "Unable to query state of VDI: %s, %s" vdi (Printexc.to_string e); false
-    )
-
 (** [on_vdi __context vbd domid f] calls [f rpc dp sr vdi] which is
     useful for executing Storage_interface.Client.VDI functions  *)
 let on_vdi ~__context ~vbd ~domid f =
@@ -1428,18 +1409,6 @@ let refresh_local_vdi_activations ~__context =
          | e -> error "Unable to query state of VDI: %s, %s" vdi (Printexc.to_string e)
        else unlock_vdi (vdi_ref, vdi_rec)
     ) all_vdi_recs
-
-(* This is a symptom of the ordering-sensitivity of the SM backend: it is not possible
-   to upgrade RO -> RW or downgrade RW -> RO on the fly.
-   One possible fix is to always attach RW and enforce read/only-ness at the VBD-level.
-   However we would need to fix the LVHD "attach provisioning mode". *)
-let vbd_attach_order ~__context vbds =
-  (* return RW devices first since the storage layer can't upgrade a
-     	   'RO attach' into a 'RW attach' *)
-  let rw, ro = List.partition (fun self -> Db.VBD.get_mode ~__context ~self = `RW) vbds in
-  rw @ ro
-
-let vbd_detach_order ~__context vbds = List.rev (vbd_attach_order ~__context vbds)
 
 let create_sr ~__context ~sr ~name_label ~name_description ~physical_size =
   transform_storage_exn

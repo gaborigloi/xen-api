@@ -49,16 +49,6 @@ let unregister sr =
        debug "unregister SR %s (currently-registered = [ %s ])" sr (String.concat ", " (Hashtbl.fold (fun sr _ acc -> sr :: acc) plugins []))
     )
 
-let query_result_of_sr sr =
-  try
-    Mutex.execute m
-      (fun () ->
-         Some (Hashtbl.find plugins sr).query_result
-      )
-  with _ -> None
-
-let features_of_sr sr = Opt.default [] (Opt.map (fun x -> x.features) (query_result_of_sr sr))
-
 (* This is the policy: *)
 let of_sr sr =
   Mutex.execute m

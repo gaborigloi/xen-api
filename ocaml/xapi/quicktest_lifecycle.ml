@@ -25,10 +25,6 @@ type result =
   | Rebooted
   | Halted
 
-let final_guest_state = function
-  | Shutdown _ -> Halted
-  | Reboot _ -> Rebooted
-
 type test = {
   api: api option;
   parallel_op: parallel_op option;

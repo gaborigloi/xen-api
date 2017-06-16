@@ -65,11 +65,7 @@ val get_session_id : t -> API.ref_session
     database or a tempory task (also called dummy). *)
 val get_task_id : t -> API.ref_task
 
-val forwarded_task : t -> bool
-
 val string_of_task : t -> string
-
-val get_task_id_string_name : t -> string * string
 
 (** [task_in_database __context] indicates if [get_task_id __context] corresponds to a task stored in database or
     to a dummy task. *)
@@ -82,9 +78,6 @@ val get_task_name : t -> string
 (** [get_origin __context] returns a string containing the origin of [__context]. *)
 val get_origin : t -> string
 
-(** [string_of __context] returns a string representing the context. *)
-val string_of : t -> string
-
 (** [database_of __context] returns a database handle, which can be used by Db.* *)
 val database_of : t -> Db_ref.t
 
@@ -96,9 +89,6 @@ val destroy : t -> unit
 
 (** [is_unix_socket fd] *)
 val is_unix_socket : Unix.file_descr -> bool
-
-(** [is_unencrypted fd] returns true if the calling connection is not encrypted *)
-val is_unencrypted : Unix.file_descr -> bool
 
 (** [preauth ~__context] *)
 val preauth : __context:t -> bool

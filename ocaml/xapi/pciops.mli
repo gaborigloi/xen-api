@@ -43,21 +43,6 @@ val hide_pci: __context:Context.t -> [ `PCI ] Ref.t -> unit
 (** Unhide a PCI device from the dom0 kernel. (Takes affect after next boot.) *)
 val unhide_pci: __context:Context.t -> [ `PCI ] Ref.t -> unit
 
-(** Return the id of a PCI device *)
-val id_of: (int * (int * int * int * int)) -> int
-
-(** Return the domain of a PCI device *)
-val domain_of: (int * (int * int * int * int)) -> int
-
-(** Return the bus of a PCI device *)
-val bus_of: (int * (int * int * int * int)) -> int
-
-(** Return the device of a PCI device *)
-val dev_of: (int * (int * int * int * int)) -> int
-
-(** Return the function of a PCI device *)
-val fn_of: (int * (int * int * int * int)) -> int
-
 (** Find a free virtual function given a physical function (SR-IOV) *)
 val reserve_free_virtual_function :
   __context:Context.t -> [ `VM ] Ref.t -> [ `PCI ] Ref.t -> [ `PCI ] Ref.t option

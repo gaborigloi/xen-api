@@ -24,8 +24,6 @@ open Stdext.Threadext
 let m = Mutex.create ()
 let table = Hashtbl.create 10
 
-let get_all ~__context = Mutex.execute m (fun () -> Hashtbl.fold (fun k v acc -> k :: acc) table [])
-
 let create ~__context ~pool =
   let r = Ref.make () in
   let session = { r = r; pool = pool; last_active = Stdext.Date.of_float (Unix.gettimeofday ()) } in

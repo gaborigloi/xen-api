@@ -16,8 +16,6 @@ open D
 
 let ( +++ ) = Int64.add
 let ( --- ) = Int64.sub
-let ( *** ) = Int64.mul
-let ( /// ) = Int64.div
 
 (** Calculates the amounts of 'normal' and 'shadow' host memory needed *)
 (** to run the given guest with the given amount of guest memory.      *)
@@ -97,17 +95,6 @@ let vm_compute_used_memory ~__context policy vm_ref =
         ~memory_dynamic_max: vm_main_record.API.vM_memory_dynamic_max
         ~memory_static_max:  vm_boot_record.API.vM_memory_static_max in
     memory_required +++ vm_main_record.API.vM_memory_overhead
-
-let vm_compute_resume_memory ~__context vm_ref =
-  if Xapi_fist.disable_memory_checks () then 0L else
-    let vm_boot_record = Helpers.get_boot_record ~__context ~self:vm_ref in
-    let (_, shadow_bytes) = vm_compute_required_memory
-        vm_boot_record vm_boot_record.API.vM_memory_static_max in
-    (* CA-31759: use the live target field for this *)
-    (* rather than the LBR to make upgrade easy.    *)
-    let suspended_memory_usage_bytes =
-      Db.VM.get_memory_target ~__context ~self:vm_ref in
-    Int64.add suspended_memory_usage_bytes shadow_bytes
 
 let vm_compute_migrate_memory ~__context vm_ref =
   if Xapi_fist.disable_memory_checks () then 0L else

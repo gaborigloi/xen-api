@@ -149,7 +149,6 @@ let vbd_is_empty = "VBD_IS_EMPTY"
 let vbd_tray_locked = "VBD_TRAY_LOCKED"
 let vbd_missing = "VBD_MISSING"
 let vm_no_empty_cd_vbd = "VM_NO_EMPTY_CD_VBD"
-let vm_snapshot_failed = "VM_SNAPSHOT_FAILED"
 let vm_snapshot_with_quiesce_failed = "VM_SNAPSHOT_WITH_QUIESCE_FAILED"
 let vm_snapshot_with_quiesce_timeout = "VM_SNAPSHOT_WITH_QUIESCE_TIMEOUT"
 let vm_snapshot_with_quiesce_plugin_does_not_respond = "VM_SNAPSHOT_WITH_QUIESCE_PLUGIN_DEOS_NOT_RESPOND"
@@ -338,8 +337,6 @@ let wlb_url_invalid = "WLB_URL_INVALID"
 let wlb_connection_reset = "WLB_CONNECTION_RESET"
 
 
-let sr_not_shared = "SR_NOT_SHARED"
-
 let default_sr_not_found = "DEFAULT_SR_NOT_FOUND"
 
 let task_cancelled = "TASK_CANCELLED"
@@ -409,8 +406,6 @@ let duplicate_mac_seed = "DUPLICATE_MAC_SEED"
 
 let client_error = "CLIENT_ERROR"
 
-let ballooning_disabled = "BALLOONING_DISABLED"
-
 let ha_host_is_armed = "HA_HOST_IS_ARMED"
 let ha_is_enabled = "HA_IS_ENABLED"
 let ha_not_enabled = "HA_NOT_ENABLED"
@@ -451,12 +446,9 @@ let system_status_must_use_tar_on_oem = "SYSTEM_STATUS_MUST_USE_TAR_ON_OEM"
 
 let xapi_hook_failed = "XAPI_HOOK_FAILED"
 
-let no_local_storage = "NO_LOCAL_STORAGE"
-
 let xenapi_missing_plugin = "XENAPI_MISSING_PLUGIN"
 let xenapi_plugin_failure = "XENAPI_PLUGIN_FAILURE"
 
-let sr_attached = "SR_ATTACHED"
 let sr_not_attached = "SR_NOT_ATTACHED"
 
 let domain_builder_error = "DOMAIN_BUILDER_ERROR"

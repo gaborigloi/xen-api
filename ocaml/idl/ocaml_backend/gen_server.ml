@@ -20,7 +20,6 @@ module Client = Gen_client
 open DT
 
 let module_name = "Make"
-let async_module_name = "Async"
 
 let _custom = "Custom"
 let _forward = "Forward"
@@ -39,9 +38,6 @@ let from_rpc ?(ignore=false) arg =
   let binding = O.string_of_param arg in
   let converter = O.type_of_param arg in
   Printf.sprintf "let %s%s = %s_of_rpc %s_rpc in" (if ignore then "_" else "") binding converter binding
-
-let read_msg_parameter msg_parameter =
-  from_rpc
 
 let debug msg args =
   if !enable_debugging

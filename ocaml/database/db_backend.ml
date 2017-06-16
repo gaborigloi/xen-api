@@ -21,7 +21,6 @@ open D
 (* --------------------- Constants/data-structures for storing db contents *)
 
 let db_FLUSH_TIMER=2.0 (* flush db write buffer every db_FLUSH_TIMER seconds *)
-let display_sql_writelog_val = ref true (* compute/write sql-writelog debug string *)
 
 (* --------------------- Util functions on db datastructures *)
 

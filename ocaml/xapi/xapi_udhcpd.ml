@@ -222,12 +222,6 @@ let maybe_add_lease ~__context vif =
         )
     ) ()
 
-let get_ip ~__context vif =
-  let vif = Ref.string_of vif in
-  Mutex.execute mutex (fun () ->
-      Opt.map (fun l -> l.ip) (find_lease_nolock vif)
-    )
-
 let init () =
   Mutex.execute mutex (fun () ->
       try load_db_nolock ()

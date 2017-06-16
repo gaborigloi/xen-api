@@ -34,8 +34,6 @@ type manager = {
   mutable in_progress: bool;       (** thread is currently servicing a request *)
 }
 
-let name_of_t (x: manager) = x.name
-
 (** Make an instance of this kind of background operation *)
 let make name f = {
   f = f;

@@ -28,10 +28,3 @@ val get_with_default: string -> string -> string
 (** Inserts a value into the database, only returns when the insertion has
     been persisted. *)
 val put: string -> string -> unit
-
-(** Insert a set of values into the database, only returns when the insertions
-    have been persisted. *)
-val putv: (string * string) list -> unit
-
-(** Delete a key from the local database *)
-val del: string -> unit

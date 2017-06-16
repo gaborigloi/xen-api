@@ -120,13 +120,6 @@ let filter (obj: obj -> bool) (field: field -> bool) (message: message -> bool)
   let system = List.filter (fun obj -> obj.messages <> [] || obj.contents <> []) system in
   rebuild system relations
 
-let map (field: field -> field) (message: message -> message)
-    ((system, relations) : api) : api =
-  let system = map_field field system in
-  let system = List.map (fun obj -> { obj with messages = List.map message obj.messages }) system in
-  rebuild system relations
-
-
 
 (*
 let map_api_fields (f: field -> field) ((system, relations) : api) : api =

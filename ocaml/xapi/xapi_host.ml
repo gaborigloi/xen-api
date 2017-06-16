@@ -66,8 +66,6 @@ let assert_safe_to_reenable ~__context ~self =
     List.iter (fun self -> Xapi_pif.abort_if_network_attached_to_protected_vms ~__context ~self) unplugged_pifs;
   end
 
-let xen_bugtool = "/usr/sbin/xen-bugtool"
-
 let bugreport_upload ~__context ~host ~url ~options =
   let proxy =
     if List.mem_assoc "http_proxy" options
@@ -171,10 +169,6 @@ let notify ~__context ~ty ~params =
   match ty with
   | "cdrom" -> signal_cdrom_event ~__context params
   | _       -> ()
-
-let rotate = function
-  | [] -> []
-  | x::xs -> xs@[x]
 
 (* A host evacuation plan consists of a hashtable mapping VM refs to instances of per_vm_plan: *)
 type per_vm_plan =

@@ -87,13 +87,3 @@ let of_datamodel () =
     one_to_many = List.fold_left (add_relation is_one_to_many) ForeignMap.empty (Dm_api.relations_of_api Datamodel.all_api);
     many_to_many = List.fold_left (add_relation is_many_to_many) ForeignMap.empty (Dm_api.relations_of_api Datamodel.all_api);
   }
-
-(* For now this is a convenience debugging function. Eventually we should
-   separate the datamodel from the database and load the schema from disk. *)
-let write_schema_to_file filename =
-  let t = of_datamodel () in
-  let sexp = Schema.sexp_of_t t in
-  let oc = open_out filename in
-  let txt = Sexplib.Sexp.to_string_hum sexp in
-  output_string oc txt;
-  close_out oc

@@ -37,12 +37,6 @@ let async_wire_name = "Async."
 
 let async_length = String.length async_wire_name
 
-(* hardcode the wire-name messages that we want to supress the printing of in the logs to avoid log spam: *)
-let supress_printing_for_these_messages : (string,unit) Hashtbl.t =
-  let tbl = Hashtbl.create 20 in
-  List.iter (fun k -> Hashtbl.replace tbl k ()) ["host.tickle_heartbeat"; "session.login_with_password"; "session.logout"; "session.local_logout"; "session.slave_local_login"; "session.slave_local_login_with_password"];
-  tbl
-
 let is_async x =
   String.length x > async_length && (String.sub x 0 async_length = async_wire_name)
 

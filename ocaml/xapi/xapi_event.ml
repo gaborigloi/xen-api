@@ -61,14 +61,6 @@ module Subscription = struct
       | [ cls; id ] -> Object(String.lowercase cls, id)
       | _ ->
         raise (Api_errors.Server_error(Api_errors.event_subscription_parse_failure, [ x ]))
-  let to_string subs =
-    let to_string x =
-      match x with
-      | Class y -> Printf.sprintf "class(%s)" y
-      | Object (cls,id) -> Printf.sprintf "object(%s,%s)" cls id
-      | All -> "all"
-    in
-    Printf.sprintf "[%s]" (String.concat "," (List.map to_string subs))
 
   let any = List.fold_left (fun acc x -> acc || x) false
 

@@ -51,14 +51,8 @@ let get_session_id x =
   | None -> failwith "Could not find a session_id"
   | Some x -> x
 
-let forwarded_task ctx =
-  ctx.forwarded_task
-
 let get_task_id ctx =
   ctx.task_id
-
-let get_task_id_string_name ctx =
-  (Ref.string_of ctx.task_id, ctx.task_name)
 
 let task_in_database ctx =
   ctx.task_in_database
@@ -69,17 +63,6 @@ let get_task_name ctx =
 let get_origin ctx =
   string_of_origin ctx.origin
 
-let string_of x =
-  let session_id = match x.session_id with
-    | None -> "None" | Some x -> Ref.string_of x in
-  Printf.sprintf "Context { session_id: %s; task_id: %s; task_in_database: %b; forwarded_task: %b; origin: %s; task_name: %s }"
-    session_id
-    (Ref.string_of x.task_id)
-    x.task_in_database
-    x.forwarded_task
-    (string_of_origin x.origin)
-    x.task_name
-
 let database_of x = x.database
 
 (** Calls coming in from the unix socket are pre-authenticated *)
@@ -87,13 +70,6 @@ let is_unix_socket s =
   match Unix.getpeername s with
     Unix.ADDR_UNIX _ -> true
   | Unix.ADDR_INET _ -> false
-
-(** Calls coming directly into xapi on port 80 from remote IPs are unencrypted *)
-let is_unencrypted s =
-  match Unix.getpeername s with
-  | Unix.ADDR_UNIX _ -> false
-  | Unix.ADDR_INET (addr, _) when addr = Unix.inet_addr_loopback -> false
-  | Unix.ADDR_INET _ -> true
 
 let default_database () =
   if Pool_role.is_master ()

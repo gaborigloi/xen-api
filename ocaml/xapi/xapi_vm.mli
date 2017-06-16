@@ -28,7 +28,6 @@ val retrieve_wlb_recommendations :
   __context:Context.t ->
   vm:[ `VM ] Ref.t -> (API.ref_host * string list) list
 val assert_agile : __context:Context.t -> self:[ `VM ] Ref.t -> unit
-val immediate_complete : __context:Context.t -> unit
 val set_actions_after_shutdown :
   __context:Context.t ->
   self:[ `VM ] Ref.t -> value:[< `destroy | `restart ] -> unit
@@ -49,7 +48,6 @@ val set_is_a_template :
   __context:Context.t -> self:[ `VM ] Ref.t -> value:bool -> unit
 val set_is_default_template :
   __context:Context.t -> vm:[ `VM ] Ref.t -> value:bool -> unit
-val validate_restart_priority : string -> unit
 val set_ha_always_run :
   __context:Context.t -> self:API.ref_VM -> value:bool -> unit
 val set_ha_restart_priority :
@@ -69,14 +67,12 @@ val set_memory_limits :
   static_min:Int64.t ->
   static_max:Int64.t -> dynamic_min:Int64.t -> dynamic_max:Int64.t -> unit
 val set_memory : __context:Context.t -> self:[ `VM ] Ref.t -> value:int64 -> unit
-val assert_not_ha_protected : __context:Context.t -> vm:[ `VM ] Ref.t -> unit
 val pause : __context:Context.t -> vm:API.ref_VM -> unit
 val unpause : __context:Context.t -> vm:API.ref_VM -> unit
 val set_xenstore_data : __context:Context.t -> self:API.ref_VM -> value:(string * string) list -> unit
 val start :
   __context:Context.t ->
   vm:API.ref_VM -> start_paused:bool -> force:bool -> unit
-val assert_host_is_localhost : __context:Context.t -> host:API.ref_host -> unit
 val start_on :
   __context:Context.t ->
   vm:API.ref_VM -> host:API.ref_host -> start_paused:bool -> force:bool -> unit
@@ -243,12 +239,8 @@ val import_convert : __context:Context.t -> _type:string -> username:string -> p
     	by the specific VM. *)
 val query_services : __context:Context.t -> self:API.ref_VM -> (string * string) list
 
-val request_rdp_on : __context:Context.t -> vm:API.ref_VM -> unit
-val request_rdp_off: __context:Context.t -> vm:API.ref_VM -> unit
-
 val call_plugin : __context:Context.t -> vm:API.ref_VM -> plugin:string -> fn:string -> args:(string * string) list -> string
 
 val set_has_vendor_device : __context:Context.t -> self:API.ref_VM -> value:bool -> unit
-val assert_can_set_has_vendor_device : __context:Context.t -> self:API.ref_VM -> value:bool -> unit
 
 val import : __context:Context.t -> url:string -> sr:API.ref_SR -> full_restore:bool -> force:bool -> API.ref_VM list
