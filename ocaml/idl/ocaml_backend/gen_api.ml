@@ -103,9 +103,8 @@ let gen_record_type ~with_module highapi tys =
   aux [] tys
 
 let with_coverage_exclusion f =
-  print "(*BISECT-IGNORE-BEGIN*)";
-  f ();
-  print "(*BISECT-IGNORE-END*)"
+  print "[@@@bisect.exclude_file]";
+  f ()
 
 let gen_client highapi = with_coverage_exclusion (fun () ->
     List.iter (List.iter print)
