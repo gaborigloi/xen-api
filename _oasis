@@ -63,8 +63,8 @@ Library xapi-database
     gzip,
     uuid,
     xcp
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Executable block_device_io
   CompiledObject:   best
@@ -72,8 +72,8 @@ Executable block_device_io
   Install:          false
   MainIs:           block_device_io.ml
   BuildDepends:     xapi-database
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Library xapi-datamodel
   CompiledObject:   best
@@ -87,8 +87,8 @@ Library xapi-datamodel
     Escaping,
     Datamodel_values,
     Datamodel_schema
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
   BuildDepends:
     xapi-database,
     xapi-consts,
@@ -107,8 +107,8 @@ Library xapi-consts
     Api_errors,
     Constants,
     Api_messages
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Executable gen_api_main
   CompiledObject:   best
@@ -137,8 +137,8 @@ Executable gen_json
   BuildDepends:
     xapi-datamodel,
     xapi-consts
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Library xapi-types
   CompiledObject:   best
@@ -168,8 +168,8 @@ Library xapi-client
                      Event_helper,
                      Tasks
   BuildDepends:      xapi-types
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Library xapi-version
   CompiledObject:   best
@@ -179,8 +179,8 @@ Library xapi-version
   BuildDepends:     xcp,
                     xcp-inventory,
                     threads
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Library pam
   CompiledObject:   best
@@ -190,8 +190,8 @@ Library pam
   CSources:         xa_auth.c, xa_auth_stubs.c, xa_auth.h
   CCOpt: -I/usr/lib64/ocaml
   CCLib: -lpam
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Library rfb
   CompiledObject:   best
@@ -221,8 +221,8 @@ Executable xapi
   Install:          false
   MainIs:           xapi_main.ml
   CompiledObject:   best
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
   BuildDepends:
     oPasswd,
     pam,
@@ -263,8 +263,8 @@ Executable xe
     stdext,
     xapi-cli-protocol,
     stunnel
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Executable perftest
   CompiledObject: best
@@ -281,8 +281,8 @@ Executable perftest
     uuid,
     threads,
     xapi-client
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Executable mpathalert
   CompiledObject: best
@@ -299,8 +299,8 @@ Executable mpathalert
     uuid,
     threads,
     xapi-client
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Executable quicktestbin
   CompiledObject: best
@@ -336,8 +336,8 @@ Executable quicktestbin
     xcp.memory,
     rrdd-plugin,
     netdev
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Executable xsh
   CompiledObject: best
@@ -345,8 +345,8 @@ Executable xsh
   Install:        false
   MainIs:         xsh.ml
   BuildDepends:   stdext, stunnel, threads
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Executable cdrommon
   CompiledObject: best
@@ -354,8 +354,8 @@ Executable cdrommon
   Install:        false
   MainIs:         cdrommon.ml
   BuildDepends:   unix, cdrom, xcp-inventory, threads
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Executable daily-license-check
   CompiledObject: best
@@ -373,8 +373,8 @@ Executable daily-license-check
     systemd,
     threads,
     xapi-client
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Executable xapi-db-process
   CompiledObject: best
@@ -393,8 +393,8 @@ Executable xapi-db-process
       threads,
       xapi-client,
       xapi-database
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Executable vncproxy
   CompiledObject: best
@@ -410,8 +410,8 @@ Executable vncproxy
     uuid,
     threads,
     xapi-client
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Executable event_listen
   CompiledObject: best
@@ -427,8 +427,8 @@ Executable event_listen
     uuid,
     threads,
     xapi-client
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Executable graph
   CompiledObject: best
@@ -445,8 +445,8 @@ Executable graph
     threads,
     xapi-client,
     xapi-datamodel
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Executable genptoken
   CompiledObject: best
@@ -455,8 +455,8 @@ Executable genptoken
   MainIs:         genptoken.ml
   BuildDepends:
     uuid
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Executable jsapi
   CompiledObject:   best
@@ -470,8 +470,8 @@ Executable jsapi
     uuid,
     gzip,
     mustache
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Executable datamodel_main
   CompiledObject:   best
@@ -522,8 +522,8 @@ Executable suite
     xcp.memory,
     rrdd-plugin,
     xenopsd
-  ByteOpt:          -warn-error +a-3-4-6-9-27-28-29
-  NativeOpt:        -warn-error +a-3-4-6-9-27-28-29
+  ByteOpt:          -warn-error +a-4-6-9-27-28-29
+  NativeOpt:        -warn-error +a-4-6-9-27-28-29
 
 Test suite
   TestTools: suite
