@@ -171,17 +171,17 @@ let test_cbt =
   let for_vdi_operations ops f () = ops |> List.iter f in
   let for_cbt_enable_disable = for_vdi_operations [`enable_cbt; `disable_cbt] in
 
-  let test_sm_feature_check op =
-    let __context = Mock.make_context_with_new_db "Mock context" in
-    run_assert_equal_with_vdi
-      ~__context
-      ~sm_fun:(fun sm -> Db.SM.remove_from_features ~__context ~self:sm ~key:"VDI_CONFIG_CBT")
-      op
-      (Some (Api_errors.sr_operation_not_supported, []))
+  let test_cbt_operations_not_allowed_when_sm_lacks_feature = for_vdi_operations all_cbt_operations (fun op ->
+      let __context = Mock.make_context_with_new_db "Mock context" in
+      run_assert_equal_with_vdi
+        ~__context
+        ~sm_fun:(fun sm -> Db.SM.remove_from_features ~__context ~self:sm ~key:"VDI_CONFIG_CBT")
+        op
+        (Some (Api_errors.sr_operation_not_supported, []))
+    )
   in
-  let test_sm_feature_check = for_vdi_operations all_cbt_operations test_sm_feature_check in
 
-  let test_cbt_enable_disable_not_allowed_for_snapshot = for_cbt_enable_disable (fun op ->
+  let test_cbt_enable_disable_not_allowed_on_snapshot = for_cbt_enable_disable (fun op ->
       let __context = Mock.make_context_with_new_db "Mock context" in
       run_assert_equal_with_vdi
         ~__context
@@ -191,7 +191,7 @@ let test_cbt =
     )
   in
 
-  let test_cbt_enable_disable_vdi_type_check = for_cbt_enable_disable (fun op ->
+  let test_cbt_enable_disable_only_allowed_on_user_and_system_vdis = for_cbt_enable_disable (fun op ->
       let __context = Mock.make_context_with_new_db "Mock context" in
       run_assert_equal_with_vdi
         ~__context
@@ -216,7 +216,7 @@ let test_cbt =
     )
   in
 
-  let test_cbt_enable_disable_not_allowed_for_reset_on_boot = for_cbt_enable_disable (fun op ->
+  let test_cbt_enable_disable_not_allowed_when_vdi_is_reset_on_boot = for_cbt_enable_disable (fun op ->
       let __context = Mock.make_context_with_new_db "Mock context" in
       run_assert_equal_with_vdi
         ~__context
@@ -236,7 +236,7 @@ let test_cbt =
     )
   in
 
-  let test_cbt_metadata_vdi_type_check = for_vdi_operations
+  let test_operations_that_should_be_disallowed_on_cbt_metadata_vdi = for_vdi_operations
       [`snapshot; `clone; `resize; `resize_online; `copy; `set_on_boot]
       (fun op ->
          let __context = Mock.make_context_with_new_db "Mock context" in
@@ -249,7 +249,7 @@ let test_cbt =
       )
   in
 
-  let test_vdi_cbt_enabled_check = for_vdi_operations
+  let test_operations_that_should_be_disallowed_when_cbt_is_enabled = for_vdi_operations
       [`mirror; `set_on_boot]
       (fun op ->
          let __context = Mock.make_context_with_new_db "Mock context" in
@@ -263,13 +263,13 @@ let test_cbt =
   in
 
   "test_cbt" >:::
-  [ "test_sm_feature_check" >:: test_sm_feature_check
-  ; "test_cbt_enable_disable_not_allowed_for_snapshot" >:: test_cbt_enable_disable_not_allowed_for_snapshot
-  ; "test_cbt_enable_disable_vdi_type_check" >:: test_cbt_enable_disable_vdi_type_check
-  ; "test_cbt_enable_disable_not_allowed_for_reset_on_boot" >:: test_cbt_enable_disable_not_allowed_for_reset_on_boot
+  [ "test_cbt_operations_not_allowed_when_sm_lacks_feature" >:: test_cbt_operations_not_allowed_when_sm_lacks_feature
+  ; "test_cbt_enable_disable_not_allowed_on_snapshot" >:: test_cbt_enable_disable_not_allowed_on_snapshot
+  ; "test_cbt_enable_disable_only_allowed_on_user_and_system_vdis" >:: test_cbt_enable_disable_only_allowed_on_user_and_system_vdis
+  ; "test_cbt_enable_disable_not_allowed_when_vdi_is_reset_on_boot" >:: test_cbt_enable_disable_not_allowed_when_vdi_is_reset_on_boot
   ; "test_cbt_enable_disable_can_be_performed_live" >:: test_cbt_enable_disable_can_be_performed_live
-  ; "test_cbt_metadata_vdi_type_check" >:: test_cbt_metadata_vdi_type_check
-  ; "test_vdi_cbt_enabled_check" >:: test_vdi_cbt_enabled_check
+  ; "test_operations_that_should_be_disallowed_on_cbt_metadata_vdi" >:: test_operations_that_should_be_disallowed_on_cbt_metadata_vdi
+  ; "test_operations_that_should_be_disallowed_when_cbt_is_enabled" >:: test_operations_that_should_be_disallowed_when_cbt_is_enabled
   ]
 
 let test =
