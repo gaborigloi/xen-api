@@ -209,6 +209,28 @@ let test_allowed_operations_updated_when_necessary () =
 	Client.Client.VDI.data_destroy ~rpc ~session_id ~self;
   assert_allowed_operations "does not contain `copy after VDI has been data-destroyed" (fun ops -> not @@ List.mem `copy ops)
 
+let test_data_destroy_waits_for_vbds_to_be_unplugged () =
+  let __context = Test_common.make_test_database () in
+  let host = Helpers.get_localhost ~__context in
+  let sR = Test_common.make_sr ~__context () in
+  (* This SM instance has CBT capabilities by default *)
+  let _: _ API.Ref.t = Test_common.make_sm ~__context () in
+  let _: _ API.Ref.t = Test_common.make_pbd ~__context ~host ~sR () in
+  let vDI = Test_common.make_vdi ~__context ~sR ~_type:`user ~cbt_enabled:true ~is_a_snapshot:true ~managed:true () in
+  let vbd = Test_common.make_vbd ~__context ~vDI ~currently_attached:true ~current_operations:["",`unplug] () in
+  register_smapiv2_server ~vdi_data_destroy:(fun _ ~dbg ~sr ~vdi -> ()) (Db.SR.get_uuid ~__context ~self:sR);
+
+  let _: Thread.t = Thread.create (fun () ->
+    (* Simulate a VBD.unplug call, which might take 1-2 seconds *)
+    Thread.delay 1.5;
+    Db.VBD.set_currently_attached ~__context ~self:vbd ~value:false;
+    Db.VBD.set_current_operations ~__context ~self:vbd ~value:[]) ()
+  in
+
+	let (rpc, session_id) = Test_client.make_client_params ~__context in
+  (* This should not fail with VDI_IN_USE error. Instead, it should block for 1.5 seconds, until the VBD is unplugged. *)
+	Client.Client.VDI.data_destroy ~rpc ~session_id ~self:vDI
+
 let test =
   let open OUnit in
   "test_vdi_cbt" >:::
@@ -217,4 +239,5 @@ let test =
   ; "test_clone_and_snapshot_correctly_sets_cbt_enabled_field" >:: test_clone_and_snapshot_correctly_sets_cbt_enabled_field
   ; test_get_nbd_info
   ; "test_allowed_operations_updated_when_necessary" >:: test_allowed_operations_updated_when_necessary
+  ; "test_data_destroy_waits_for_vbds_to_be_unplugged" >:: test_data_destroy_waits_for_vbds_to_be_unplugged
   ]
