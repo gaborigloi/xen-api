@@ -655,6 +655,7 @@ let set_stunnel_timeout () =
 (* Consult inventory, because to do DB lookups we must contact the
  * master, and to do that we need to start an outgoing stunnel. *)
 let set_stunnel_legacy_inv ~__context () =
+  debug "XXXX set_stunnel_legacy_inv";
   Stunnel.set_good_ciphersuites (match !Xapi_globs.ciphersuites_good_outbound with
       | ""  -> raise (Api_errors.Server_error (Api_errors.internal_error,["Configuration file does not specify ciphersuites-good-outbound."]))
       | s -> s
@@ -667,18 +668,21 @@ let set_stunnel_legacy_inv ~__context () =
       error "Invalid inventory value for %s: expected a Boolean; found %s" Xapi_inventory._stunnel_legacy s;
       raise e
   in
-  Xapi_host.set_stunnel_legacy ~__context legacy
+  Xapi_host.set_stunnel_legacy ~__context legacy;
+  debug "XXXX set_stunnel_legacy_inv finished"
 
 (* Consult database, in case inventory was out of date due to a DB change while
  * we were shut down. *)
 let set_stunnel_legacy_db ~__context () =
+  debug "XXXX set_stunnel_legacy_db";
   let legacy_cur = Stunnel.is_legacy_protocol_and_ciphersuites_allowed () in
   let localhost = Helpers.get_localhost ~__context in
   let legacy_db = Db.Host.get_ssl_legacy ~__context ~self:localhost in
   if legacy_db <> legacy_cur then begin
     debug "Stunnel legacy (current) = %b,  stunnel legacy (DB) = %b, reconfig based on DB" legacy_cur legacy_db;
     Xapi_host.set_stunnel_legacy ~__context legacy_db
-  end
+  end;
+  debug "XXXX set_stunnel_legacy_db finished"
 
 (* Consult database to see if this host has any interfaces on networks
  * that we want to use for NBD. If so, start the NBD server listening

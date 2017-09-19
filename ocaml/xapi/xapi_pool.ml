@@ -2063,10 +2063,12 @@ let assert_mac_seeds_available ~__context ~self ~seeds =
              (Api_errors.duplicate_mac_seed, [StringSet.choose problem_mac_seeds]))
 
 let set_ssl_legacy_on_each_host ~__context ~self ~value =
+  debug "XXXX set_ssl_legacy_on_each_host";
   let f ~rpc ~session_id ~host =
     Client.Host.set_ssl_legacy ~rpc ~session_id ~self:host ~value
   in
-  Xapi_pool_helpers.call_fn_on_slaves_then_master ~__context f
+  Xapi_pool_helpers.call_fn_on_slaves_then_master ~__context f;
+  debug "XXXX set_ssl_legacy_on_each_host finished"
 
 let disable_ssl_legacy = set_ssl_legacy_on_each_host ~value:false
 

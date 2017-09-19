@@ -47,23 +47,32 @@ let restart_stunnel_nomutex ~__context ~accept =
   in
   let xapissl_args = [ "restart"; accept ] @ (back_compat ~__context) in
   let (_ : Thread.t) = Thread.create (fun () ->
+      debug "XXXX xapissl restart mutex";
       Mutex.execute management_m (fun () ->
-          Forkhelpers.execute_command_get_output !Xapi_globs.xapissl_path xapissl_args
+          debug "XXXX running xapissl restart";
+          Forkhelpers.execute_command_get_output !Xapi_globs.xapissl_path xapissl_args |> ignore;
+          debug "XXXX xapissl restart finished"
         )
     ) () in
   ()
 
 let restart_stunnel ~__context ~accept =
+  debug "XXXX restart_stunnel mutex";
   Mutex.execute stunnel_m (fun () ->
+      debug "XXXX running restart_stunnel";
       stunnel_accept := Some accept;
-      restart_stunnel_nomutex ~__context ~accept
+      restart_stunnel_nomutex ~__context ~accept;
+      debug "XXXX restart_stunnel finished"
     )
 
 let reconfigure_stunnel ~__context =
+  debug "XXXX reconfigure stunnel mutex";
   Mutex.execute stunnel_m (fun () ->
+      debug "XXXX running reconfigure stunnel";
       match !stunnel_accept with
       | None -> () (* We've not yet started stunnel; no action needed *)
-      | Some accept -> restart_stunnel_nomutex ~__context ~accept
+      | Some accept -> restart_stunnel_nomutex ~__context ~accept;
+      debug "XXXX reconfigure stunnel finished"
     )
 
 let stop () =
@@ -78,6 +87,7 @@ let stop () =
  * _the_ management interface. Slaves in a pool use the IP address of this interface to connect
  * the pool master. *)
 let start ~__context ?addr () =
+  debug "XXXX running mgmt iface start";
   let socket, accept =
     match addr with
     | None ->
@@ -112,7 +122,8 @@ let start ~__context ?addr () =
       (fun __context ->
          Dbsync_master.set_master_ip ~__context;
          Dbsync_master.refresh_console_urls ~__context)
-  end
+  end;
+  debug "XXXX mgmt iface start finished"
 
 let change interface primary_address_type =
   Xapi_inventory.update Xapi_inventory._management_interface interface;
