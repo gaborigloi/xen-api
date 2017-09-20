@@ -5,7 +5,7 @@
 # Generate a TLS certificate file to use with stunnel etc.
 #
 
-echo $(date) > /tmp/generate_ssl_start
+logger XXXX generate-ssl-cert script started at $(date)
 
 DIR=/tmp/ssl-generation-$$
 FILE=$1
@@ -21,7 +21,9 @@ if [ -e ${FILE} ]; then
 	exit 3
 fi
 
+logger XXXX generate-ssl-cert generating dnsnames
 dnsnames=$((hostname -A; hostname -f) | sort | uniq)
+logger XXXX generate-ssl-cert generating addresses
 addresses=$(hostname -I | sort | uniq)
 
 mkdir -p ${DIR}
@@ -61,6 +63,7 @@ done
 openssl genrsa 1024 > privkey.rsa
 
 # Generate certificate-signing-request
+logger XXXX generate-ssl-cert generating certificate-signing-request
 openssl req -batch -new -key privkey.rsa -days 3650 -config config -out cert.csr
 
 # Sign it, creating a certificate.
@@ -68,8 +71,10 @@ openssl req -batch -new -key privkey.rsa -days 3650 -config config -out cert.csr
 # so we have to re-specify them using the -extfile option.
 # (Trying to do this in one step by passing -x509 to the "req" command ignores
 # the extensions too, but "req" does not allow the -extfile option.)
+logger XXXX generate-ssl-cert signing it
 openssl x509 -extfile config -req -signkey privkey.rsa -in cert.csr -outform PEM -out signedpubcert.pem -days 3650
 
+logger XXXX generate-ssl-cert openssl dhparam
 openssl dhparam 512 > dh.pem
 
 popd
@@ -80,6 +85,6 @@ chmod 400 ${FILE}
 
 rm -rf ${DIR}
 
-echo $(date) > /tmp/generate_ssl_end
+logger XXXX generate-ssl-cert script finished at $(date)
 
 exit 0

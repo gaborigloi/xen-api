@@ -16,6 +16,8 @@
 # config: @ETCDIR@/stunnel.conf
 # pidfile: /var/run/xapissl.pid
 
+logger XXXX started init.d-xapissl
+
 # Source function library.
 . /lib/lsb/init-functions
 
@@ -126,6 +128,7 @@ EOF
 
 start() {
     echo -n $"Starting xapi SSL: "
+    logger XXXX starting xapi SSL
     if [ -e ${XAPISSL_LOCK} ]; then
         if [ -e ${SSLPIDFILE} ] && [ -e /proc/`cat ${SSLPIDFILE}` ]; then
             echo -n $"cannot start xapi SSL: xapi SSL is already running.";
@@ -135,6 +138,8 @@ start() {
         fi
     fi
     if [ ! -f ${PEMFILE} ]; then
+        logger XXXX starting xapi SSL: generating a pem file
+
         # generating a pem file
         CN=`hostname -f`
 
@@ -154,6 +159,7 @@ start() {
 
     echo
     [ $RETVAL -eq 0 ] && touch ${XAPISSL_LOCK};
+    logger XXXX started xapi SSL
     return $RETVAL
 }
 
@@ -236,3 +242,5 @@ case "$1" in
         echo $"Usage: $0 {start|stop|status|restart|condrestart}"
         exit 1
 esac
+
+logger XXXX finished init.d-xapissl
