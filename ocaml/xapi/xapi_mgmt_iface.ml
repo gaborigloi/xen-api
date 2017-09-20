@@ -50,7 +50,12 @@ let restart_stunnel_nomutex ~__context ~accept =
       debug "XXXX xapissl restart mutex";
       Mutex.execute management_m (fun () ->
           debug "XXXX running xapissl restart";
-          Forkhelpers.execute_command_get_output !Xapi_globs.xapissl_path xapissl_args |> ignore;
+          begin try
+            Forkhelpers.execute_command_get_output !Xapi_globs.xapissl_path xapissl_args |> ignore
+          with Forkhelpers.Spawn_internal_error(stderr, stdout, status) as e ->
+            debug "XXXX xapissl forkhelepers got error: stderr='%s' stdout='%s'" stderr stdout;
+            raise e
+          end;
           debug "XXXX xapissl restart finished"
         )
     ) () in
