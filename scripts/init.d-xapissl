@@ -151,6 +151,7 @@ start() {
             *)
                 CN=`mgmt_ip`;;
         esac
+        logger XXXX starting xapi SSL: running generate_ssl_cert
         "@LIBEXECDIR@/generate_ssl_cert" ${PEMFILE} ${CN}
     fi
     writeconffile

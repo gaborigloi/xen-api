@@ -13,11 +13,13 @@ CN=$2
 
 if [ -z "${CN}" ]; then
 	echo "usage: $0 <certname> <cn>"
+	logger "usage: $0 <certname> <cn>"
 	exit 2
 fi
 
 if [ -e ${FILE} ]; then
 	echo "file already exists: cannot overwrite";
+	logger "file already exists: cannot overwrite"
 	exit 3
 fi
 
