@@ -142,15 +142,20 @@ start() {
 
         # generating a pem file
         CN=`hostname -f`
+        logger XXXX "CN='$CN'"
 
         case "${CN}" in
             localhost*)
+                logger XXXX 'case localhost*)'
                 CN=`mgmt_ip`;;
             *.*)
+                logger XXXX 'case *.*)'
                 :;;
             *)
+                logger XXXX 'case *)'
                 CN=`mgmt_ip`;;
         esac
+        logger XXXX "PEMFILE='$PEMFILE' CN='$CN'"
         logger XXXX starting xapi SSL: running generate_ssl_cert
         "@LIBEXECDIR@/generate_ssl_cert" ${PEMFILE} ${CN}
     fi
