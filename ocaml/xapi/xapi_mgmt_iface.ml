@@ -74,9 +74,10 @@ let reconfigure_stunnel ~__context =
   debug "XXXX reconfigure stunnel mutex";
   Mutex.execute stunnel_m (fun () ->
       debug "XXXX running reconfigure stunnel";
-      match !stunnel_accept with
+      begin match !stunnel_accept with
       | None -> () (* We've not yet started stunnel; no action needed *)
-      | Some accept -> restart_stunnel_nomutex ~__context ~accept;
+      | Some accept -> restart_stunnel_nomutex ~__context ~accept
+      end;
       debug "XXXX reconfigure stunnel finished"
     )
 
