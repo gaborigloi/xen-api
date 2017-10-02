@@ -567,10 +567,15 @@ module SMAPIv1 = struct
                with _ ->
                  Uuid.string_of_uuid (Uuid.make_uuid ())
              in
+             (** VDI snapshots will inherit the cbt_enabled property. In case of
+                 VDI.clone, the newly-created VDI will always have CBT disabled
+                 by default. *)
+             let new_cbt_enabled = if is_a_snapshot then vdi_info.cbt_enabled else false in
              Db.VDI.set_name_label ~__context ~self ~value:vdi_info.name_label;
              Db.VDI.set_name_description ~__context ~self ~value:vdi_info.name_description;
              Db.VDI.set_snapshot_time ~__context ~self ~value:(Date.of_string vdi_info.snapshot_time);
              Db.VDI.set_is_a_snapshot ~__context ~self ~value:is_a_snapshot;
+             Db.VDI.set_cbt_enabled ~__context ~self ~value:new_cbt_enabled;
              Db.VDI.remove_from_other_config ~__context ~self ~key:"content_id";
              Db.VDI.add_to_other_config ~__context ~self ~key:"content_id" ~value:content_id;
              debug "copying sm-config";
