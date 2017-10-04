@@ -844,11 +844,17 @@ module SMAPIv1 = struct
         raise (Vdi_does_not_exist vdi)
       | Sm.MasterOnly -> redirect sr
 
-    let enable_cbt context =
-      call_cbt_function context ~f:Sm.vdi_enable_cbt ~f_name:"VDI.enable_cbt"
+    let enable_cbt context ~dbg ~sr ~vdi =
+      call_cbt_function context ~f_name:"VDI.enable_cbt" ~dbg ~sr ~vdi ~f:(fun device_config _type sr self ->
+          Sm.vdi_enable_cbt device_config _type sr self;
+          Db.VDI.set_cbt_enabled ~__context:context ~self ~value:true
+        )
 
-    let disable_cbt context =
-      call_cbt_function context ~f:Sm.vdi_disable_cbt ~f_name:"VDI.disable_cbt"
+    let disable_cbt context ~dbg ~sr ~vdi =
+      call_cbt_function context ~f_name:"VDI.disable_cbt" ~dbg ~sr ~vdi ~f:(fun device_config _type sr self ->
+          Sm.vdi_disable_cbt device_config _type sr self;
+          Db.VDI.set_cbt_enabled ~__context:context ~self ~value:false
+        )
 
     let data_destroy context ~dbg ~sr ~vdi =
       call_cbt_function context ~f:Sm.vdi_data_destroy ~f_name:"VDI.data_destroy" ~dbg ~sr ~vdi;
