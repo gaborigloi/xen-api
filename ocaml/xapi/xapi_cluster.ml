@@ -96,11 +96,15 @@ let pool_destroy ~__context ~self =
       let master = Helpers.get_master ~__context in
       Xapi_clustering.find_cluster_host ~__context ~host:master
     in
-    Xapi_stdext_monadic.Opt.default
+    match master_cluster_host with
+    | Some master_cluster_host ->
+        (* XXX We assume that there is only one cluster in the pool *)
+        master_cluster_host
+    | None ->
+      warn "Pool master is not a member of the cluster";
       (* It is an invariant that a Cluster always has at least one
          Cluster_host, so this should never fail. *)
-      (List.hd cluster_hosts)
-      master_cluster_host
+      List.hd cluster_hosts
   in
   let other_cluster_hosts = cluster_hosts |> List.filter ((<>) last_cluster_host) in
   List.iter
