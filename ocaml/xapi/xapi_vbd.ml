@@ -86,7 +86,7 @@ let start_nbd_client ~unix_socket_path ~export_name =
 
 let stop_nbd_client ~nbd_device =
   debug "XXXX stop_nbd_client %s" nbd_device;
-  print_fork_error (fun () -> Forkhelpers.execute_command_get_output "nbd-client" ["-disconnect"; nbd_device]) |> ignore
+  print_fork_error (fun () -> Forkhelpers.execute_command_get_output "/usr/sbin/nbd-client" ["-disconnect"; nbd_device]) |> ignore
 
 let set_mode ~__context ~self ~value =
   let vm = Db.VBD.get_VM ~__context ~self in
