@@ -497,9 +497,12 @@ let enable  ~__context ~host =
     then Helpers.call_api_functions ~__context (fun rpc session_id -> Client.Client.Pool.ha_schedule_plan_recomputation rpc session_id)
   end
 
-let shutdown_and_reboot_common ~__context ~host label description operation cmd =
+let shutdown_precheck ~__context ~host =
   if Db.Host.get_enabled ~__context ~self:host
-  then raise (Api_errors.Server_error (Api_errors.host_not_disabled, []));
+  then raise (Api_errors.Server_error (Api_errors.host_not_disabled, []))
+
+let prepare_for_shutdown ~__context ~host =
+  shutdown_precheck ~__context ~host;
 
   let i_am_master = Pool_role.is_master () in
   if i_am_master then
@@ -509,6 +512,8 @@ let shutdown_and_reboot_common ~__context ~host label description operation cmd 
           because we might need it when unplugging the PBDs
         *)
        Remote_requests.stop_request_thread();
+
+  Vm_evacuation.ensure_no_vms ~__context ~evacuate_timeout:0.;
 
   Xapi_ha.before_clean_shutdown_or_reboot ~__context ~host;
   Xapi_pbd.unplug_all_pbds ~__context;
@@ -525,7 +530,14 @@ let shutdown_and_reboot_common ~__context ~host label description operation cmd 
   (* This prevents anyone actually re-enabling us until after reboot *)
   Localdb.put Constants.host_disabled_until_reboot "true";
   (* This helps us distinguish between an HA fence and a reboot *)
-  Localdb.put Constants.host_restarted_cleanly "true";
+  Localdb.put Constants.host_restarted_cleanly "true"
+
+let shutdown_and_reboot_common ~__context ~host label description operation cmd =
+  (* The actual shutdown actions will be done asynchronously, in a call to
+     prepare_for_shutdown. Here we only do the prechecks to return a suitable
+     XenAPI error to the API user. *)
+  shutdown_precheck ~__context ~host;
+
   (* This tells the master that the shutdown is still ongoing: it can be used to continue
      	 masking other operations even after this call return.
 
