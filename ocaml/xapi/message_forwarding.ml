@@ -2287,6 +2287,12 @@ module Forward = functor(Local: Custom_actions.CUSTOM_ACTIONS) -> struct
            do_op_on ~local_fn ~__context ~host (fun session_id rpc -> Client.Host.reboot rpc session_id host)
         )
 
+    (* This is only be called by systemd during shutdown when xapi-domains.service is stopped *)
+    let prepare_for_shutdown ~__context ~host =
+      info "Host.prepare_for_shutdown: host = '%s'" (host_uuid ~__context host);
+      let local_fn = Local.Host.prepare_for_shutdown ~host in
+      do_op_on ~local_fn ~__context ~host (fun session_id rpc -> Client.Host.prepare_for_shutdown rpc session_id host)
+
     let power_on ~__context ~host =
       info "Host.power_on: host = '%s'" (host_uuid ~__context host);
       with_host_operation ~__context ~self:host ~doc:"Host.power_on" ~op:`power_on

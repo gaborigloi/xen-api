@@ -52,6 +52,7 @@ val restart_agent : __context:'a -> host:'b -> unit
 val shutdown_agent : __context:'a -> unit
 val disable : __context:Context.t -> host:[ `host ] Ref.t -> unit
 val enable : __context:Context.t -> host:[ `host ] Ref.t -> unit
+val prepare_for_shutdown : __context:Context.t -> host:[ `host ] Ref.t -> unit
 val shutdown : __context:Context.t -> host:[ `host ] Ref.t -> unit
 val reboot : __context:Context.t -> host:[ `host ] Ref.t -> unit
 val power_on : __context:Context.t -> host:[ `host ] Ref.t -> unit
