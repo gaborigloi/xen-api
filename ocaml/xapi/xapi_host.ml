@@ -484,12 +484,11 @@ let enable  ~__context ~host =
     then Helpers.call_api_functions ~__context (fun rpc session_id -> Client.Client.Pool.ha_schedule_plan_recomputation rpc session_id)
   end
 
-let shutdown_precheck ~__context ~host =
-  if Db.Host.get_enabled ~__context ~self:host
-  then raise (Api_errors.Server_error (Api_errors.host_not_disabled, []))
+let prepare_for_shutdown_precheck ~__context ~host =
+  Xapi_host_helpers.assert_host_disabled ~__context ~host
 
 let prepare_for_shutdown ~__context ~host =
-  shutdown_precheck ~__context ~host;
+  prepare_for_shutdown_precheck ~__context ~host;
 
   let i_am_master = Pool_role.is_master () in
   if i_am_master then
@@ -520,10 +519,18 @@ let prepare_for_shutdown ~__context ~host =
   Localdb.put Constants.host_restarted_cleanly "true"
 
 let shutdown_and_reboot_common ~__context ~host label description operation cmd =
-  (* The actual shutdown actions will be done asynchronously, in a call to
-     prepare_for_shutdown. Here we only do the prechecks to return a suitable
-     XenAPI error to the API user. *)
-  shutdown_precheck ~__context ~host;
+  (* The actual shutdown actions are done asynchronously, in a call to
+     prepare_for_shutdown, so the API user will not be notified of any errors
+     that happen during that operation.
+     Therefore here we make an additional call to the prechecks of every
+     operation that gets called from prepare_for_shutdown, either directly or
+     indirectly, to fail early and ensure that a suitable error is returned to
+     the XenAPI user. *)
+  let shutdown_precheck () =
+    prepare_for_shutdown_precheck ~__context ~host;
+    Xapi_ha.before_clean_shutdown_or_reboot_precheck ~__context ~host
+  in
+  shutdown_precheck ();
 
   (* This tells the master that the shutdown is still ongoing: it can be used to continue
      	 masking other operations even after this call return.
