@@ -17,6 +17,11 @@ let get_resident_vms ~__context ~self =
 
 let ensure_no_vms ~__context ~rpc ~session_id ~evacuate_timeout =
   let open Client in
+
+  let is_running vm =
+    Db.VM.get_power_state ~__context ~self:vm = `Running
+  in
+
   let host = Helpers.get_localhost ~__context in
   let self_managed_poweroff vm =
     let result = Db.VM.get_other_config ~__context ~self:vm
@@ -27,11 +32,9 @@ let ensure_no_vms ~__context ~rpc ~session_id ~evacuate_timeout =
   in
   let get_running_domains () =
     get_resident_vms ~__context ~self:host |> snd
-    |> List.filter (fun vm ->
-           Db.VM.get_power_state ~__context ~self:vm = `Running &&
-             not (self_managed_poweroff vm))
+    |> List.filter (fun vm -> is_running vm && not (self_managed_poweroff vm))
   in
-  
+
   let evacuate () =
     TaskHelper.exn_if_cancelling ~__context; (* First check if _we_ have been cancelled *)
     info "Requesting evacuation of host";
@@ -42,7 +45,7 @@ let ensure_no_vms ~__context ~rpc ~session_id ~evacuate_timeout =
        evacuation failed *)
     Tasks.with_tasks_destroy ~rpc ~session_id ~timeout ~tasks |> ignore
   in
-  
+
   let clean_shutdown vms =
     TaskHelper.exn_if_cancelling ~__context; (* First check if _we_ have been cancelled *)
     let tasks =
@@ -66,7 +69,8 @@ let ensure_no_vms ~__context ~rpc ~session_id ~evacuate_timeout =
              Client.Async.VM.hard_shutdown ~rpc ~session_id ~vm) in
     (* no timeout: we need the VMs to be off *)
     Tasks.wait_for_all ~rpc ~session_id ~tasks;
-    get_running_domains ()
+    vms
+    |> List.filter is_running
     |> List.iter (fun vm ->
            let name_label = Client.VM.get_name_label ~rpc ~session_id ~self:vm in
            info "Failure performing hard shutdown of VM: %s" name_label)
@@ -77,7 +81,7 @@ let ensure_no_vms ~__context ~rpc ~session_id ~evacuate_timeout =
     (* XXX: shutdown.py only acted on running domains, but what about
      * suspended/paused? *)
     vms
-    |> List.filter (fun vm -> Db.VM.get_power_state ~__context ~self:vm = `Running)
+    |> List.filter is_running
     |> hard_shutdown
   in
 
