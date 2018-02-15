@@ -574,12 +574,12 @@ let rec cmdtable_data : (string*cmd_spec) list =
       flags=[Host_selectors];
     };
 
-    "host-prepare-for-shutdown",
+    "host-prepare-for-poweroff",
     {
       reqd=[];
       optn=[];
       help="Perform the necessary actions before host shutdown or reboot.";
-      implementation=No_fd Cli_operations.host_prepare_for_shutdown;
+      implementation=No_fd Cli_operations.host_prepare_for_poweroff;
       flags=[Hidden];
     };
 
