@@ -185,7 +185,7 @@ let valid_operations ~expensive_sharing_checks ~__context record _ref' : table =
       debug "VBD operation %s not allowed because VDI.current-operations = [ %s ]"
         (String.concat ";" (List.map vbd_operation_to_string current_ops))
         (String.concat "; "
-           (List.map (fun (task, op) -> task ^ " -> " ^ (vdi_operation_to_string op)) vdi_record.Db_actions.vDI_current_operations));
+           (List.map (fun (task, op) -> (Ref.string_of task) ^ " -> " ^ (vdi_operation_to_string op)) vdi_record.Db_actions.vDI_current_operations));
       let concurrent_op = snd (List.hd vdi_record.Db_actions.vDI_current_operations) in
       set_errors Api_errors.other_operation_in_progress
         [ "VDI"; Ref.string_of vdi; vdi_operation_to_string concurrent_op] [ `attach; `plug; `insert ]

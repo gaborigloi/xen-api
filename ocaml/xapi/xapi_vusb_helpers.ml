@@ -47,7 +47,7 @@ let valid_operations ~__context record _ref': table =
   if current_ops <> [] then begin
     debug "No operations are valid because current-operations = [ %s ]"
       (String.concat "; "
-         (List.map (fun (task, op) -> task ^ " -> " ^ (vusb_operation_to_string op)) current_ops));
+         (List.map (fun (task, op) -> (Ref.string_of task) ^ " -> " ^ (vusb_operation_to_string op)) current_ops));
     let concurrent_op = snd (List.hd current_ops) in
     set_errors Api_errors.other_operation_in_progress
       [ "VUSB"; _ref; vusb_operation_to_string concurrent_op ] all_ops;

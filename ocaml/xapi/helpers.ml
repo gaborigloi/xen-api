@@ -788,7 +788,7 @@ let cancel_tasks ~__context ~ops ~all_tasks_in_db (* all tasks in database *) ~t
     let into (e, _) l = List.mem e l in
     (* If it's a task we want to explicitly cancel or a task which doesn't exist in the
        database at all then we should cancel it. *)
-    List.iter (fun s1 -> if into s1 taskids || not(List.mem (Ref.of_string (fst s1)) all_tasks_in_db) then c := true else su1 := s1 :: !su1) set1;
+    List.iter (fun s1 -> if into s1 taskids || not(List.mem (fst s1) all_tasks_in_db) then c := true else su1 := s1 :: !su1) set1;
     !su1, !c
   in
   let unique_ops, got_common = cancel_splitset_taskid ops task_ids in

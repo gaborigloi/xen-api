@@ -127,7 +127,7 @@ let cancel_tasks_on_host ~__context ~host_opt =
        and all_srs = Db.SR.get_all ~__context
        and all_hosts = Db.Host.get_all ~__context
        in
-       let task_ids = List.map Ref.string_of incomplete_tasks in
+       let task_ids = incomplete_tasks in
 
        List.iter (safe_wrapper "vm_lifecycle" (fun self -> Xapi_vm_lifecycle.cancel_tasks ~__context ~self ~all_tasks_in_db:tasks ~task_ids)) all_vms;
        List.iter (safe_wrapper "vbd_helpers" (fun self -> Xapi_vbd_helpers.cancel_tasks ~__context ~self ~all_tasks_in_db:tasks ~task_ids)) all_vbds;
