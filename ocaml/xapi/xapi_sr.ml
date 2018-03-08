@@ -188,6 +188,24 @@ let probe ~__context ~host ~device_config ~_type ~sm_config =
        | Probe _ as x -> Xmlrpc.to_string (rpc_of_probe_result x)
     )
 
+let probe_ext ~__context ~host ~device_config ~_type ~sm_config =
+  API.(
+    [
+      {
+        probe_result_configuration = ["a","b"];
+        probe_result_complete = true;
+        probe_result_sr = { sr_stat_free_space = 1L };
+        probe_result_extra_info = [("1","2")];
+      };
+      {
+        probe_result_configuration = ["c","d"];
+        probe_result_complete = true;
+        probe_result_sr = { sr_stat_free_space = 2L };
+        probe_result_extra_info = [("3","4")];
+      }
+    ]
+  )
+
 (* Create actually makes the SR on disk, and introduces it into db, and creates PBD record for current host *)
 let create  ~__context ~host ~device_config ~(physical_size:int64) ~name_label ~name_description
     ~_type ~content_type ~shared ~sm_config =
