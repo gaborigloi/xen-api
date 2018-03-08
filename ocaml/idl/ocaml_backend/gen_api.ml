@@ -126,8 +126,10 @@ let add_set_enums types =
           if List.exists (fun ty2 -> ty2 = DT.Set ty) types then [ty] else [DT.Set ty; ty]
         | _ -> [ty]) types)
 
+let all_types_of highapi = DU.Types.of_objects (Dm_api.objects_of_api highapi)
+
 let gen_client_types highapi =
-  let all_types = DU.Types.of_objects (Dm_api.objects_of_api highapi) in
+  let all_types = all_types_of highapi in
   let all_types = add_set_enums all_types in
   List.iter (List.iter print)
     (between [""] [
@@ -186,8 +188,17 @@ let gen_custom_actions highapi =
 open Gen_db_actions
 
 let gen_db_actions highapi =
-  let all_types = DU.Types.of_objects (Dm_api.objects_of_api highapi) in
+  let all_types = all_types_of highapi in
   let only_records = List.filter (function DT.Record _ -> true | _ -> false) all_types in
+
+  let highapi_in_db =
+    Dm_api.filter
+      (fun obj -> obj.DT.in_database)
+      (fun _ -> true)
+      (fun _ -> true)
+      highapi
+  in
+  let all_types_in_db = all_types_of highapi_in_db in
 
   List.iter (List.iter print)
     (between [""]
@@ -198,10 +209,10 @@ let gen_db_actions highapi =
          gen_record_type ~with_module:false highapi only_records;
 
          (* NB record types are ignored by dm_to_string and string_to_dm *)
-         O.Module.strings_of (dm_to_string all_types);
-         O.Module.strings_of (string_to_dm all_types);
-         O.Module.strings_of (db_action highapi); ]
-     @ (List.map O.Module.strings_of (Gen_db_check.all highapi)) @ [
+         O.Module.strings_of (dm_to_string all_types_in_db);
+         O.Module.strings_of (string_to_dm all_types_in_db);
+         O.Module.strings_of (db_action highapi_in_db); ]
+     @ (List.map O.Module.strings_of (Gen_db_check.all highapi_in_db)) @ [
 
      ]
     )
