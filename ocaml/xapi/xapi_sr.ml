@@ -194,13 +194,13 @@ let probe_ext ~__context ~host ~device_config ~_type ~sm_config =
       {
         probe_result_configuration = ["a","b"];
         probe_result_complete = true;
-        probe_result_sr = { sr_stat_free_space = 1L };
+        probe_result_sr = None;
         probe_result_extra_info = [("1","2")];
       };
       {
         probe_result_configuration = ["c","d"];
         probe_result_complete = true;
-        probe_result_sr = { sr_stat_free_space = 2L };
+        probe_result_sr = Some { sr_stat_free_space = 2L };
         probe_result_extra_info = [("3","4")];
       }
     ]
