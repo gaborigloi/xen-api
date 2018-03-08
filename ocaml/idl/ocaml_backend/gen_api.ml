@@ -76,24 +76,13 @@ let gen_record_type ~with_module highapi tys =
       let all_fields = DU.fields_of_obj (Dm_api.get_obj_by_name highapi ~objname:record) in
       let field fld = OU.ocaml_of_record_field (obj_name :: fld.DT.full_name) in
       let map_fields fn = String.concat "; " (List.map (fun field -> fn field) all_fields) in
-      let regular_def fld = sprintf "%s : %s" (field fld) (OU.alias_of_ty fld.DT.ty) in
+      let rpc_name fld = (String.concat "_" fld.DT.full_name) in
+      let regular_def fld = sprintf "%s : %s  [@key \"%s\"]" (field fld) (OU.alias_of_ty fld.DT.ty) (rpc_name fld) in
 
-      let make_of_field fld =
-        sprintf "\"%s\",rpc_of_%s x.%s" (String.concat "_" fld.DT.full_name)
-          (OU.alias_of_ty fld.DT.ty) (OU.ocaml_of_record_field (obj_name :: fld.DT.full_name))
-      in
-
-      let make_to_field fld =
-        sprintf "%s = %s_of_rpc (List.assoc \"%s\" x)" (field fld) (OU.alias_of_ty fld.DT.ty)
-          (String.concat "_" fld.DT.full_name)
-      in
-
-      let type_t = sprintf "type %s_t = { %s }" obj_name (map_fields regular_def) in
+      let type_t = sprintf "type %s_t = { %s } [@@deriving rpc]" obj_name (map_fields regular_def) in
       let others = if not with_module then
           []
         else [
-          sprintf "let rpc_of_%s_t x = Rpc.Dict [ %s ]" obj_name (map_fields make_of_field);
-          sprintf "let %s_t_of_rpc x = on_dict (fun x -> { %s }) x" obj_name (map_fields make_to_field);
           sprintf "type ref_%s_to_%s_t_map = (ref_%s * %s_t) list [@@deriving rpc]" record obj_name record obj_name;
           sprintf "type %s_t_set = %s_t list [@@deriving rpc]" obj_name obj_name;
           ""
