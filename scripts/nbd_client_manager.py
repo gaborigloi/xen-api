@@ -131,12 +131,15 @@ def connect_nbd(path, exportname):
 
 def disconnect_nbd_device(nbd_device):
     """
-    Disconnects the given device using nbd-client
+    Disconnects the given device using nbd-client.
+    This function is idempotent: calling it on an already disconnected device
+    does nothing.
     """
     FILE_LOCK.lock()
-    cmd = ['nbd-client', '-disconnect', nbd_device]
-    _call(cmd)
-    _wait_for_nbd_device(nbd_device=nbd_device, connected=False)
+    if _is_nbd_device_connected(nbd_device=nbd_device):
+        cmd = ['nbd-client', '-disconnect', nbd_device]
+        _call(cmd)
+        _wait_for_nbd_device(nbd_device=nbd_device, connected=False)
     FILE_LOCK.unlock()
 
 
