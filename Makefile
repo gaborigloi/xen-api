@@ -14,6 +14,9 @@ clean:
 test:
 	jbuilder runtest --no-buffer -j $$(getconf _NPROCESSORS_ONLN)
 
+check-indent: reindent
+	git diff --quiet --exit-code
+
 doc:
 	jbuilder build ocaml/doc/jsapi.exe ocaml/idl/datamodel_main.exe
 	_build/default/ocaml/doc/jsapi.exe -destdir _build/install/default/xapi/doc/html -templdir ocaml/doc/templates
