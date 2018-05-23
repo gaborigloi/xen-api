@@ -16,28 +16,23 @@ open Xapi_stdext_pervasives.Pervasiveext
 open Forkhelpers
 open Client
 
-let rpc = Quicktest_args.rpc
-
-let init_session username password =
-  Client.Session.login_with_password ~rpc:!rpc ~uname:username ~pwd:password ~version:Datamodel_common.api_version_string ~originator:"quick_test"
-
-let get_pool session_id =
-  let pool = Client.Pool.get_all !rpc session_id in
+let get_pool rpc session_id =
+  let pool = Client.Pool.get_all rpc session_id in
   if List.length pool <> 1 then (failwith "Number of pools isn't zero!");
   List.hd pool
 
-let http request f =
+let http args request f =
   let open Xmlrpc_client in
   let transport =
-    if !Quicktest_args.using_unix_domain_socket
+    if args.Args.using_unix_domain_socket
     then Unix Xapi_globs.unix_domain_socket
-    else SSL(SSL.make ~use_fork_exec_helper:false (), !Quicktest_args.host, 443) in
+    else SSL(SSL.make ~use_fork_exec_helper:false (), args.Args.host, 443) in
   with_transport transport (with_http request f)
 
 let cli_cmd args =
   print_endline (String.concat " " ("$ xe" :: args));
   try
-    let output = String.rtrim (fst(Forkhelpers.execute_command_get_output !Quicktest_args.xe_path args)) in
+    let output = String.rtrim (fst(Forkhelpers.execute_command_get_output Args.xe_path args)) in
     print_endline output;
     output
   with
@@ -54,25 +49,25 @@ module VM = struct
 
     let other = "Other install media"
 
-    let find session_id startswith =
-      let vms = Client.VM.get_all !rpc session_id in
+    let find rpc session_id startswith =
+      let vms = Client.VM.get_all rpc session_id in
       match List.filter (fun self ->
-          (String.startswith startswith (Client.VM.get_name_label !rpc session_id self))
-          && (Client.VM.get_is_a_template !rpc session_id self)
+          (String.startswith startswith (Client.VM.get_name_label rpc session_id self))
+          && (Client.VM.get_is_a_template rpc session_id self)
         ) vms with
       | [] -> raise Unable_to_find_suitable_vm_template
       | x :: _ ->
-        Printf.printf "Choosing template with name: %s\n" (Client.VM.get_name_label !rpc session_id x);
+        Printf.printf "Choosing template with name: %s\n" (Client.VM.get_name_label rpc session_id x);
         x
   end
 
-  let install session_id template name =
+  let install rpc session_id template name =
     let newvm_uuid = cli_cmd [ "vm-install"; "template-uuid=" ^ template; "new-name-label=" ^ name ] in
-    Client.VM.get_by_uuid !rpc session_id newvm_uuid
+    Client.VM.get_by_uuid rpc session_id newvm_uuid
 
   (** Return a host's domain zero *)
-  let dom0_of_host session_id host =
-    Client.Host.get_control_domain !rpc session_id host
+  let dom0_of_host rpc session_id host =
+    Client.Host.get_control_domain rpc session_id host
 end
 
 let assert_raises_match exception_match fn =

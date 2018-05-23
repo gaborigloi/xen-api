@@ -76,21 +76,18 @@ module VDI = struct
       ~tags:[]
       ~sm_config:[]
 
-  let with_destroyed session_id self f =
-    let rpc = !Quicktest_common.rpc in
+  let with_destroyed rpc session_id self f =
     Xapi_stdext_pervasives.Pervasiveext.finally
       f
       (fun () -> Client.Client.VDI.destroy ~rpc ~session_id ~self)
 
-  let with_new session_id ?(virtual_size=4194304L) sr f =
-    let rpc = !Quicktest_common.rpc in
+  let with_new rpc session_id ?(virtual_size=4194304L) sr f =
     let self = make rpc session_id ~virtual_size sr in
-    with_destroyed session_id self (fun () -> f self)
+    with_destroyed rpc session_id self (fun () -> f self)
 
-  let with_any session_id sr_info f =
-    let rpc = !Quicktest_common.rpc in
+  let with_any rpc session_id sr_info f =
     if List.mem `vdi_create sr_info.allowed_operations then begin
-      with_new session_id sr_info.sr f
+      with_new rpc session_id sr_info.sr f
     end else begin
       let self = Client.Client.SR.get_VDIs ~rpc ~session_id ~self:sr_info.sr |> List.hd in
       f self
@@ -98,8 +95,7 @@ module VDI = struct
 
   let check_fields = Quicktest_common.compare_fields "VDI"
 
-  let test_update session_id self =
-    let rpc = !Quicktest_common.rpc in
+  let test_update rpc session_id self =
     let original_vdi = Client.Client.VDI.get_record ~rpc ~session_id ~self in
     Client.Client.VDI.update ~rpc ~session_id ~vdi:self;
     let new_vdi = Client.Client.VDI.get_record ~rpc ~session_id ~self in
@@ -133,7 +129,7 @@ module Sr_filter = struct
   let only_sr sr rpc session_id _sr_infos = [get_sr_info rpc session_id sr]
 
   let default_sr rpc session_id _sr_infos =
-    let pool = Quicktest_common.get_pool session_id in
+    let pool = Quicktest_common.get_pool rpc session_id in
     let default = Client.Client.Pool.get_default_SR ~rpc ~session_id ~self:pool in
     [get_sr_info rpc session_id default]
 
@@ -141,11 +137,11 @@ module Sr_filter = struct
     (** Return the size of the smallest disk we can create in this SR. This wouldn't be necessary
         except the Netapp SR breaks with convention and returns errors rather than rounding up
         for small disks *)
-    let find_smallest_disk_size session_id sr =
+    let find_smallest_disk_size rpc session_id sr =
       let sizes = Sizes.[ 0L; 1L; 1L ** mib; 2L ** mib; 4L ** mib ] in
       let try_one size =
         try
-          VDI.with_new session_id ~virtual_size:size sr (fun _vdi ->
+          VDI.with_new rpc session_id ~virtual_size:size sr (fun _vdi ->
               Some size)
         with _ -> None
       in
@@ -163,7 +159,7 @@ module Sr_filter = struct
         |> List.map
           (fun sr_info ->
              sr_info,
-             match find_smallest_disk_size session_id sr_info.sr with Some size -> size | None -> Sizes.(1L ** gib)
+             match find_smallest_disk_size rpc session_id sr_info.sr with Some size -> size | None -> Sizes.(1L ** gib)
           )
       in
       List.fold_left
@@ -261,11 +257,11 @@ let get_test_cases_for_srs rpc session_id storage_test_cases sr_infos =
   |> List.map (expand rpc session_id sr_infos)
   |> List.flatten
 
-let list_srs session_id filter =
+let list_srs args filter =
+  let Args.{rpc; session_id; use_default_sr; _} = args in
   let sr_selection_filter =
-    if !Quicktest_args.use_default_sr then Sr_filter.default_sr else Sr_filter.all
+    if use_default_sr then Sr_filter.default_sr else Sr_filter.all
   in
-  let rpc = !Quicktest_common.rpc in
   Client.Client.SR.get_all rpc session_id
   |> List.filter
     (fun sr ->
@@ -277,6 +273,6 @@ let list_srs session_id filter =
   |> sr_selection_filter rpc session_id
   |> filter rpc session_id
 
-let get_test_cases session_id storage_test_cases =
-  let rpc = !Quicktest_common.rpc in
-  list_srs session_id Sr_filter.all |> (get_test_cases_for_srs rpc session_id storage_test_cases)
+let get_test_cases args storage_test_cases =
+  let Args.{rpc; session_id; _} = args in
+  list_srs args Sr_filter.all |> (get_test_cases_for_srs rpc session_id storage_test_cases)

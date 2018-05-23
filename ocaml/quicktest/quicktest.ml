@@ -13,8 +13,6 @@
  *)
 
 let () =
-  Quicktest_args.parse ();
-
   Stunnel.set_good_ciphersuites "!EXPORT:RSA+AES128-SHA256";
   let s = Quicktest_common.init_session !Quicktest_args.username !Quicktest_args.password in
 

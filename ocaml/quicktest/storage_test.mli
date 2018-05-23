@@ -11,25 +11,27 @@ type sr_info =
   ; capabilities: string list
   }
 
+type rpc = Rpc.call -> Rpc.response
+
 module VDI : sig
 
   (** Runs the given function with a new temporary VDI if
       VDI.create is supported, otherwise it will pass an existing one to the
       function. *)
-  val with_any : API.ref_session -> sr_info -> (API.ref_VDI -> 'a) -> 'a
+  val with_any : rpc -> API.ref_session -> sr_info -> (API.ref_VDI -> 'a) -> 'a
 
   (** Makes sure the given VDI is destroyed after the function processed it. *)
-  val with_destroyed : API.ref_session -> API.ref_VDI -> (unit -> 'a) -> 'a
+  val with_destroyed : rpc -> API.ref_session -> API.ref_VDI -> (unit -> 'a) -> 'a
 
   (** Runs the given function with a new temporary VDI *)
-  val with_new : API.ref_session -> ?virtual_size:int64 -> API.ref_SR -> (API.ref_VDI -> 'a) -> 'a
+  val with_new : rpc -> API.ref_session -> ?virtual_size:int64 -> API.ref_SR -> (API.ref_VDI -> 'a) -> 'a
 
   (** Verify that the fields of the two VDIs changed as expected *)
   val check_fields : ([`Same | `Different] * string * (API.vDI_t -> string)) list -> API.vDI_t -> API.vDI_t -> unit
 
   (** Calls VDI.update and checks that the VDI fields that must be the same are
       the same before and after the update. *)
-  val test_update : API.ref_session -> API.ref_VDI -> unit
+  val test_update : rpc -> API.ref_session -> API.ref_VDI -> unit
 end
 
 module Sr_filter : sig
@@ -80,11 +82,11 @@ type test_case = string * Alcotest.speed_level * (API.ref_session -> sr_info -> 
 
 (** Return a [sr_info] list of all SRs which have been selected by the
     specified filter and have at least one plugged-in PBD, ie those which we
-    can use for stuff. If the corresponding CLI flag is present, only the
+    can use for stuff. If the use_default_sr argument is true, only the
     default SR will be considered instead of filtering all SRs. *)
-val list_srs : API.ref_session -> Sr_filter.t -> sr_info list
+val list_srs : Args.args -> Sr_filter.t -> sr_info list
 
 (** Returns an [Alcotest.test_case] for all the possible (storage test, SR)
     combinations. By default, all the plugged SRs will be considered. If the
-    corresponding CLI argument is present, only the default SR will be used. *)
-val get_test_cases : API.ref_session -> test_case list -> unit Alcotest.test_case list
+    use_default_sr argument is true, only the default SR will be used. *)
+val get_test_cases : Args.args -> test_case list -> unit Alcotest.test_case list
