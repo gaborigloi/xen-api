@@ -13,4 +13,20 @@
 		ctypes
 		ctypes.foreign
 	)
+  (modules hash)
+)
+
+(executable
+ (name suite)
+ (libraries
+  alcotest
+  seahash
+ )
+ (modules suite)
+)
+
+(alias
+ (name   runtest)
+ (deps   (:suite suite.exe))
+ (action (run %{suite}))
 )

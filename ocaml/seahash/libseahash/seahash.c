@@ -110,35 +110,3 @@ uint64_t file(const char *name) {
 	return finalise(sum);
 }
 
-int main(int argc, char **argv) {
-	// These hash outputs were precomputed using the SeaHash reference implementation (which is written in Rust).
-	char temp[4096];
-
-	char *a = ""; // 0 bytes
-	strcpy(temp, a);
-	assert(bytes(a, 0) == 0xC920CA43256FDCB9);
-
-	char *b = "Hello, World!"; // 13 bytes
-	strcpy(temp, b);
-	assert(bytes(temp, 13) == 0x2EC2572966D006FD);
-
-	char *d = "g0VugDZm43UU4KvVMczhoO0LvDIsAG8F1"; // 33 bytes
-	strcpy(temp, d);
-	assert(bytes(temp, 33) == 0x709F6C5CF482869E);
-
-	char *f = "gBy7IsF6xgDww7IHAW7u1XCBgqw1NKG2e7rW1kjJ57Om18lF"; // 48 bytes
-	strcpy(temp, f);
-	assert(bytes(temp, 48) == 0x187E2EE0343CCDC3);
-
-	char *c = "V8lL08akfSYCQpDtKyAH56SQNORwpF4rxXn9H2wDvWKDR5Rn3mdJBftuDSCEZvI"; // 63 bytes
-	strcpy(temp, c);
-	assert(bytes(temp, 63) == 0x8FDCA544A6B3476F);
-
-	for(size_t i = 0; i < sizeof(temp); i++) temp[i] = i;
-	assert(bytes(temp, sizeof(temp)) == 0xE8010714612E6C70);
-
-	file(*argv); 
-
-	puts("Tests Passed!");
-}
-
